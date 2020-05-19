@@ -8,6 +8,7 @@ import com.example.chess.common.room.ChessRoom;
 import com.example.chess.common.room.Room;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
@@ -25,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 @ServerEndpoint("/chess")
+@Component
 public class WebSocketChess {
 
     private static Logger logger = LoggerFactory.getLogger(WebSocketChess.class);
@@ -34,6 +36,7 @@ public class WebSocketChess {
     private static ConcurrentHashMap<String, Room> roomMap = new ConcurrentHashMap<String, Room>();
 
     static {
+        System.out.println(" chess static ");
         RunContext context = new RunContext(roomMap);
         DeamonThread deamonThread = new DeamonThread(context);
         Thread dThread = new Thread(deamonThread);
@@ -44,52 +47,54 @@ public class WebSocketChess {
     @OnMessage
     public void onMessage(String message, Session session)
             throws IOException, InterruptedException {
-        Set<Session> session_list =null;
-        session_list =session.getOpenSessions();
+        Set<Session> session_list = null;
+        session_list = session.getOpenSessions();
         String roomId = getRoomId(session);
-        if (message.startsWith("connect")){
+        if (message.startsWith("connect")) {
             doConnect(session, message);
-        }else if (message.startsWith("chess")){
+        } else if (message.startsWith("chess")) {
             String content = message.substring(5);
             ChessAction chessAction = JSONObject.parseObject(content, ChessAction.class);
             chessAction.setCode("Chess");
             Room room = roomMap.get(roomId);
-            if (room.vaildAction(chessAction)){
+            if (room.vaildAction(chessAction)) {
                 Result result = new Result();
                 result.setSuccess(true);
                 result.setModel(chessAction);
                 room.broadcast(JSONObject.toJSONString(result));
             }
-        }else if (message.startsWith("ready")){
+        } else if (message.startsWith("ready")) {
             doReady(session, message);
-        }else if (message.startsWith("over")){
+        } else if (message.startsWith("over")) {
             doReady(session, message);
         }
     }
 
     /**
      * 处理ready事件
+     *
      * @param session
      * @param message
      * @throws IOException
      * @throws InterruptedException
      */
-    private void doReady(Session session, String message) throws IOException, InterruptedException{
+    private void doReady(Session session, String message) throws IOException, InterruptedException {
         Room room = getRoom(session);
         room.doReady(session);
     }
 
-    private void doOver(Session session, String message) throws  IOException, InterruptedException{
+    private void doOver(Session session, String message) throws IOException, InterruptedException {
         Room room = getRoom(session);
 
     }
 
     /**
      * 获取RoomId
+     *
      * @param session
      * @return
      */
-    private String getRoomId(Session session){
+    private String getRoomId(Session session) {
         List<String> roomList = session.getRequestParameterMap().get("roomId");
         String roomId = roomList.get(0);
         return roomId;
@@ -97,35 +102,37 @@ public class WebSocketChess {
 
     /**
      * 获取房间
+     *
      * @param session
      * @return
      */
-    private Room getRoom(Session session){
+    private Room getRoom(Session session) {
         return roomMap.get(getRoomId(session));
     }
 
     /**
      * 处理CONNECT请求
+     *
      * @param session
      * @param message
      * @throws IOException
      * @throws InterruptedException
      */
-    public void doConnect(Session session, String message) throws IOException, InterruptedException{
+    public void doConnect(Session session, String message) throws IOException, InterruptedException {
         List<String> roomList = session.getRequestParameterMap().get("roomId");
         String roomId = roomList.get(0);
         logger.info("A new Client Connect and the roomid is [" + roomId + "]");
-        if (roomMap.containsKey(roomId)){
+        if (roomMap.containsKey(roomId)) {
             Room room = roomMap.get(roomId);
-            if (room.enterRoom(session)){
+            if (room.enterRoom(session)) {
                 session.getUserProperties().put("roomId", roomId);
-            }else{
+            } else {
                 Result result = new Result();
                 result.setSuccess(false);
                 result.setErrMsg("进入房间失败");
                 session.getBasicRemote().sendText(JSONObject.toJSONString(result));
             }
-        }else{
+        } else {
             Room room = new ChessRoom(roomId, 2);
             room.enterRoom(session);
             roomMap.put(roomId, room);
@@ -135,18 +142,18 @@ public class WebSocketChess {
 
 
     @OnOpen
-    public void onOpen () {
+    public void onOpen() {
         System.out.println("Client connected");
     }
 
     @OnClose
-    public void onClose (Session session) {
-        String roomId = (String)session.getUserProperties().get("roomId");
-        if (roomId != null){
+    public void onClose(Session session) {
+        String roomId = (String) session.getUserProperties().get("roomId");
+        if (roomId != null) {
             Room room = roomMap.get(roomId);
-            if (room != null){
+            if (room != null) {
                 room.leaveRoom(session);
-                if (room.getNowNumber() <= 0){
+                if (room.getNowNumber() <= 0) {
                     roomMap.remove(roomId);
                 }
             }
