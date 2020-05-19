@@ -1,29 +1,22 @@
 package com.example.chess.common;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * Created by chanming on 16/7/20.
  */
-
+@Data
 public class Result {
-    /**
-     * 错误信息
-     */
-    private @Getter
-    @Setter
-    String errMsg;
-    /**
-     * 返回实体
-     */
-    private @Getter
-    @Setter
-    Object model;
     /**
      * 是否成功
      */
-    private @Getter
-    @Setter
-    Boolean success;
+    private Boolean code = true;
+    /**
+     * 错误信息
+     */
+    private String message;
+    /**
+     * 返回实体
+     */
+    private Object data;
 }

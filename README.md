@@ -15,8 +15,8 @@
   ```
     Result{
         succss; #是否成功
-        errmsg; #错误信息
-        model: #内容
+        message; #错误信息
+        data: #内容
     }
   ```
 3. 增加一个守护线程,统计房间数量.

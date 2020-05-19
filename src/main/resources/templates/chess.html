@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1">
+    <meta name=renderer content=webkit>
+    <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
     <link href="../static/css/chess.css" rel="stylesheet" type="text/css">
     <title></title>
     <style type="text/css">
@@ -33,22 +35,33 @@
 
 
         var chessData = new Array(15);//这个为棋盘的二维数组用来保存棋盘信息，初始化0为没有走过的，1为白棋走的，2为黑棋走的
-        for (var x = 0; x < 15; x++) {
-            chessData[x] = new Array(15);
-            for (var y = 0; y < 15; y++) {
-                chessData[x][y] = 0;
+        var initChessBoard = function () {
+            chessData = new Array(15);//这个为棋盘的二维数组用来保存棋盘信息，初始化0为没有走过的，1为白棋走的，2为黑棋走的
+            for (var x = 0; x < 15; x++) {
+                chessData[x] = new Array(15);
+                for (var y = 0; y < 15; y++) {
+                    chessData[x][y] = 0;
+                }
             }
-        }
 
-        function drawRect() {//页面加载完毕调用函数，初始化棋盘
+            last_x = -1;
+            last_y = -1;
+        };
+
+        function drawRect() {
+            //页面加载完毕调用函数，初始化棋盘
+            // 初始化棋盘数据
+            allowPlay = false;
+            initChessBoard();
+
             canvas = document.getElementById("canvas");
             context = canvas.getContext("2d");
-            var board = new Image();
+
             context.fillStyle = "#996600";
             context.fillRect(0, 0, 640, 640);
-            context.fillStyle = "#CCFFFF"
+            context.fillStyle = "#CCFFFF";
             context.fillText("房间号:", 650, 45);
-            context.strokeStyle = "white"
+            context.strokeStyle = "white";
 
             for (var i = 0; i <= 640; i += 40) {//绘制棋盘的线
                 context.beginPath();
@@ -113,7 +126,7 @@
             var y = getAbsoluteY(e.clientY);
 
             if (chessData[x][y] != 0) {//判断该位置是否被下过了
-                toastrShow("你不能在这个位置下棋",0);
+                toastrShow("你不能在这个位置下棋", 0);
                 return;
             }
 
@@ -143,9 +156,9 @@
                     context.drawImage(img_b_now, getRelativeX(x), getRelativeY(y));
                     chessData[x][y] = 2;
                 }
-                judge(x, y, chess);
                 last_x = x;
                 last_y = y;
+                judge(x, y, chess);
             }
         }
 
@@ -245,18 +258,24 @@
 
         function onMessage(event) {
             var result = JSON.parse(event.data);
-            if (!result.success) {
-                toastrShow("系统异常" + event.data, 0);
+            console.log("onMessage" + result);
+            if (!result.code) {
+                toastrShow("系统异常:" + result.message, 0);
+                return;
             }
-            var action = result.model;
+            var action = result.data;
             if (action.code == "Start") {
                 startGame(action);
             } else if (action.code == "Chess") {
                 recieveChessMsg(action);
+            } else if (action.code == "fullEvent") {
+                // 房间已满
+                fullEvent();
             }
         }
 
         function startGame(action) {
+            isWell = false;
             allowPlay = true;
             if (action.detail == "White") {
                 myTurn = true;
@@ -279,18 +298,25 @@
         function sendReadyMsg() {
             if (isReady == false) {
                 webSocket.send("ready");
-                toastrShow("准备好了")
+                toastrShow("准备好了");
+                fullEvent("准备好了");
             }
             isReady = true;
         }
 
         function sendOverMsg() {
+            fullEvent();
+            drawRect();
             webSocket.send("over");
         }
 
         function recieveChessMsg(action) {
             if (action.color == "White") {
                 drawChess(1, action.x, action.y);
+                if (isWell == true) {
+                    toastrShow("已经结束了，重新开始2", 0);
+                    return;
+                }
                 if (isWhite == true) {
                     isWhite = false;
                 } else {
@@ -300,6 +326,10 @@
                 changeTip();
             } else {
                 drawChess(2, action.x, action.y);
+                if (isWell == true) {
+                    toastrShow("已经结束了，重新开始1", 0);
+                    return;
+                }
                 if (isWhite == false) {
                     isWhite = true;
                 } else {
@@ -320,10 +350,14 @@
 
         function changeHead() {
             if (myTurn == false) {
-                document.getElementById("head").innerHTML = "你的房间号为" + roomId + "你是黑色";
+                document.getElementById("head").innerHTML = "你的房间号为" + roomId + " | 你是黑色";
             } else {
-                document.getElementById("head").innerHTML = "你的房间号为" + roomId + "你是白色";
+                document.getElementById("head").innerHTML = "你的房间号为" + roomId + " | 你是白色";
             }
+        }
+        function fullEvent(message) {
+            if (message == undefined) { message = "有玩家未准备" }
+            document.getElementById("tips").innerHTML = "等待所有玩家准备 | " + message;
         }
     </script>
 </head>

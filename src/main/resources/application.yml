@@ -12,6 +12,12 @@ spring:
     allow-bean-definition-overriding: true
   thymeleaf:
 #    mode: HTML5
+#    suffix: .html
+#    encoding: UTF-8
+#    servlet:
+#      content-type: text/html
+    #这个开发配置为false，避免改了模板还要重启服务器
+    cache: false
     prefix: classpath:/templates/
   http:
     encoding:

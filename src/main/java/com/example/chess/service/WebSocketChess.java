@@ -56,10 +56,9 @@ public class WebSocketChess {
             ChessAction chessAction = JSONObject.parseObject(content, ChessAction.class);
             chessAction.setCode("Chess");
             Room room = roomMap.get(roomId);
-            if (room.vaildAction(chessAction)) {
+            if (room.validAction(chessAction)) {
                 Result result = new Result();
-                result.setSuccess(true);
-                result.setModel(chessAction);
+                result.setData(chessAction);
                 room.broadcast(JSONObject.toJSONString(result));
             }
         } else if (message.startsWith("ready")) {
@@ -85,6 +84,8 @@ public class WebSocketChess {
     private void doOver(Session session, String message) throws IOException, InterruptedException {
         Room room = getRoom(session);
         room.doOver(session);
+        // 重新初始化棋盘
+        room.initChessBoard();
     }
 
     /**
@@ -126,9 +127,10 @@ public class WebSocketChess {
             if (room.enterRoom(session)) {
                 session.getUserProperties().put("roomId", roomId);
             } else {
+                System.out.println("---- 进入房间失败 ----");
                 Result result = new Result();
-                result.setSuccess(false);
-                result.setErrMsg("进入房间失败");
+                result.setCode(false);
+                result.setMessage("进入房间失败");
                 session.getBasicRemote().sendText(JSONObject.toJSONString(result));
             }
         } else {

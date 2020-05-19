@@ -3,6 +3,7 @@ package com.example.chess.service;
 import com.alibaba.fastjson.JSONObject;
 import com.example.chess.common.ChessAction;
 import com.example.chess.common.Result;
+import com.example.chess.common.RunContext;
 import com.example.chess.common.room.ChessRoom;
 import com.example.chess.common.room.Room;
 import org.springframework.stereotype.Component;
@@ -15,15 +16,15 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-@ServerEndpoint("/websocket")
+@ServerEndpoint("/Catan")
 @Component
-public class WebsocketTest {
+public class WebsocketCatan {
 
     // 静态变量，用来记录当前在线链接数。应该把他设计成线程安全的。
     private static int onlineCount = 0;
 
     // 用来存放每个客户端对应的myWebSocket对象。
-    private static CopyOnWriteArraySet<WebsocketTest> user = new CopyOnWriteArraySet<>();
+    private static CopyOnWriteArraySet<WebsocketCatan> user = new CopyOnWriteArraySet<>();
 
     private static ConcurrentHashMap<String, Room> roomMap = new ConcurrentHashMap<String, Room>();
 
@@ -31,11 +32,11 @@ public class WebsocketTest {
     private Session session;
 
     static {
-//        System.out.println("Deamon Thread Created!");
-//        RunContext context = new RunContext(roomMap);
-//        DeamonThread deamonThread = new DeamonThread(context);
-//        Thread dThread = new Thread(deamonThread);
-//        dThread.start();
+        System.out.println("Deamon Thread Created!");
+        RunContext context = new RunContext(roomMap);
+        DeamonThread deamonThread = new DeamonThread(context);
+        Thread dThread = new Thread(deamonThread);
+        dThread.start();
     }
 
     /**
@@ -91,7 +92,7 @@ public class WebsocketTest {
     @OnMessage
     public void onMessage(String message, Session session) throws IOException, InterruptedException {
         // 群发消息给前端
-        for (WebsocketTest myWebSocket: user){
+        for (WebsocketCatan myWebSocket: user){
             myWebSocket.session.getBasicRemote().sendText(session.getId());
         }
 
@@ -108,10 +109,9 @@ public class WebsocketTest {
             ChessAction chessAction = JSONObject.parseObject(content, ChessAction.class);
             chessAction.setCode("Chess");
             Room room = roomMap.get(roomId);
-            if (room.vaildAction(chessAction)) {
+            if (room.validAction(chessAction)) {
                 Result result = new Result();
-                result.setSuccess(true);
-                result.setModel(chessAction);
+                result.setData(chessAction);
                 room.broadcast(JSONObject.toJSONString(result));
             }
         } else if (message.startsWith("ready")) {
@@ -150,10 +150,10 @@ public class WebsocketTest {
         return onlineCount;
     }
     private static synchronized void addOnlineCount() {
-        WebsocketTest.onlineCount++;
+        WebsocketCatan.onlineCount++;
     }
     private static synchronized void subOnlineCount() {
-        WebsocketTest.onlineCount--;
+        WebsocketCatan.onlineCount--;
     }
 
 
@@ -216,9 +216,10 @@ public class WebsocketTest {
             if (room.enterRoom(session)) {
                 session.getUserProperties().put("roomId", roomId);
             } else {
+                System.out.println("---- 进入房间失败 ----");
                 Result result = new Result();
-                result.setSuccess(false);
-                result.setErrMsg("进入房间失败");
+                result.setCode(false);
+                result.setMessage("进入房间失败");
                 session.getBasicRemote().sendText(JSONObject.toJSONString(result));
             }
         } else {

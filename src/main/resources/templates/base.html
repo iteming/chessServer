@@ -45,7 +45,7 @@
 
         var intTimeOut;
 
-        close = function () {
+        var hidden_toast = function () {
             if ($("#toastr-container").length > 0) {
                 if ($('#toastr-container').css('display') == 'block') {
                     $('#toastr-container').css('display', 'none');
@@ -54,7 +54,7 @@
         };
 
         var toastrShow = function (msg, status) {
-            close();
+            hidden_toast();
             clearTimeout(intTimeOut);
 
             if (status == undefined) {

@@ -5,8 +5,7 @@ import com.example.chess.common.Action;
 import com.example.chess.common.ChessAction;
 import com.example.chess.common.Result;
 import com.example.chess.common.StartAction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.websocket.Session;
 import java.util.Date;
@@ -14,21 +13,12 @@ import java.util.Date;
 /**
  * Created by chanming on 16/7/14.
  */
-
+@Slf4j
 public class ChessRoom extends Room {
 
-    private Integer chessBoard[][] = new Integer[16][16];
+    private Integer[][] chessBoard = new Integer[16][16];
     private int maxSize = 16;
     private ChessAction lastChessAction;
-    private static Logger logger = LoggerFactory.getLogger(ChessRoom.class);
-
-    private void initChessBoard() {
-        for (int i = 0; i < maxSize; ++i) {
-            for (int j = 0; j < maxSize; ++j) {
-                chessBoard[i][j] = 0;
-            }
-        }
-    }
 
     public ChessRoom(String roomId, int totalNumber) {
         this.roomId = roomId;
@@ -37,6 +27,21 @@ public class ChessRoom extends Room {
         initChessBoard();
     }
 
+    /**
+     * 初始化棋盘数据
+     */
+    @Override
+    public void initChessBoard() {
+        for (int i = 0; i < maxSize; ++i) {
+            for (int j = 0; j < maxSize; ++j) {
+                chessBoard[i][j] = 0;
+            }
+        }
+    }
+
+    /**
+     * 房间进满了人事件
+     */
     @Override
     public void fullEvent() {
         System.out.println("Room[" + roomId + "] is full, Send Ready Message");
@@ -50,8 +55,8 @@ public class ChessRoom extends Room {
             }
             try {
                 Result result = new Result();
-                result.setSuccess(true);
-                result.setModel(startAction);
+                startAction.setCode("fullEvent");
+                result.setData(startAction);
                 session.getBasicRemote().sendText(JSONObject.toJSONString(result));
                 System.out.println("Send OK");
             } catch (Exception e) {
@@ -63,7 +68,7 @@ public class ChessRoom extends Room {
 
     @Override
     public void startGame() {
-        logger.info("Room[" + roomId + "] is allReady, Send GameStart Message!");
+        log.info("Room[" + roomId + "] is allReady, Send GameStart Message!");
         int tmp = 0;
         for (Session session : sessions.keySet()) {
             StartAction startAction = new StartAction();
@@ -74,12 +79,11 @@ public class ChessRoom extends Room {
             }
             try {
                 Result result = new Result();
-                result.setSuccess(true);
-                result.setModel(startAction);
+                result.setData(startAction);
                 session.getBasicRemote().sendText(JSONObject.toJSONString(result));
-                logger.info("Send Start Message OK");
+                log.info("Send Start Message OK");
             } catch (Exception e) {
-                logger.error("Send Start Message Error");
+                log.error("Send Start Message Error");
             }
             tmp++;
         }
@@ -87,7 +91,7 @@ public class ChessRoom extends Room {
     }
 
     @Override
-    public boolean vaildAction(Action action) {
+    public boolean validAction(Action action) {
         if (action instanceof ChessAction) {
             if (lastChessAction != null && ((ChessAction) action).getColor().equals(lastChessAction.getColor())) {
                 return false;
