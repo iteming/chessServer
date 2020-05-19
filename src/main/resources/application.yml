@@ -11,6 +11,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   thymeleaf:
+#    mode: HTML5
     prefix: classpath:/templates/
   http:
     encoding:

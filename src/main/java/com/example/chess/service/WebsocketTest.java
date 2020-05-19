@@ -3,7 +3,6 @@ package com.example.chess.service;
 import com.alibaba.fastjson.JSONObject;
 import com.example.chess.common.ChessAction;
 import com.example.chess.common.Result;
-import com.example.chess.common.RunContext;
 import com.example.chess.common.room.ChessRoom;
 import com.example.chess.common.room.Room;
 import org.springframework.stereotype.Component;
@@ -32,11 +31,11 @@ public class WebsocketTest {
     private Session session;
 
     static {
-        System.out.println("Deamon Thread Created!");
-        RunContext context = new RunContext(roomMap);
-        DeamonThread deamonThread = new DeamonThread(context);
-        Thread dThread = new Thread(deamonThread);
-        dThread.start();
+//        System.out.println("Deamon Thread Created!");
+//        RunContext context = new RunContext(roomMap);
+//        DeamonThread deamonThread = new DeamonThread(context);
+//        Thread dThread = new Thread(deamonThread);
+//        dThread.start();
     }
 
     /**

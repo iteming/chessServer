@@ -1,0 +1,81 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My WebSocket</title>
+</head>
+<body>
+<div th:fragment="toastr">
+
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <link rel="stylesheet" href="../static/plugins/toastr/toastr.css">
+    <script src="../static/plugins/toastr/toastr.js"></script>
+
+    <div id="toastr-container" class="toastr-bottom-right" aria-live="polite" role="alert"
+         style="display: none" onclick="hidden_toast()">
+    </div>
+
+    <script>
+        var toastr = function () {
+            toastr.options = {
+                "closeButton": false,
+                "debug": false,
+                "positionClass": "toastr-bottom-right",
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+        };
+
+        var toastrAutoClose = function () {
+            if ($("#toastr-container").length > 0) {
+                if ($('#toastr-container').css('display') == 'block') {
+                    setTimeout(function () {
+                        $('#toastr-container').css('display', 'none');
+                    }, '3000')
+                }
+            }
+        };
+
+        var intTimeOut;
+
+        close = function () {
+            if ($("#toastr-container").length > 0) {
+                if ($('#toastr-container').css('display') == 'block') {
+                    $('#toastr-container').css('display', 'none');
+                }
+            }
+        };
+
+        var toastrShow = function (msg, status) {
+            close();
+            clearTimeout(intTimeOut);
+
+            if (status == undefined) {
+                status = 1
+            }
+
+            if ($("#toastr-container").length > 0 && msg != '') {
+                if ($('#toastr-container').css('display') == 'none') {
+                    $('#toastr-container').css('display', 'block');
+                    var msgclass = status == 1 ? 'toastr-success' : (status == 0 ? 'toastr-error' : (status == 3 ? 'toastr-warning' : 'toastr-info'));
+                    var html = '<div class="toastr ' + msgclass + '"><div class="toastr-message">' + msg + '</div></div>';
+                    $('#toastr-container').html(html);
+
+                    intTimeOut = setTimeout(function () {
+                        $('#toastr-container').css('display', 'none');
+                    }, '3000')
+                }
+            }
+        };
+    </script>
+
+</div>
+</body>
+</html>

@@ -22,15 +22,15 @@ public class ChessRoom extends Room {
     private ChessAction lastChessAction;
     private static Logger logger = LoggerFactory.getLogger(ChessRoom.class);
 
-    private void initChessBoard(){
-        for (int i = 0; i < maxSize; ++i){
-            for (int j = 0; j < maxSize; ++j){
+    private void initChessBoard() {
+        for (int i = 0; i < maxSize; ++i) {
+            for (int j = 0; j < maxSize; ++j) {
                 chessBoard[i][j] = 0;
             }
         }
     }
 
-    public ChessRoom(String roomId, int totalNumber){
+    public ChessRoom(String roomId, int totalNumber) {
         this.roomId = roomId;
         this.totalNumber = totalNumber;
         this.createTime = new Date();
@@ -38,14 +38,14 @@ public class ChessRoom extends Room {
     }
 
     @Override
-    public void fullEvent(){
+    public void fullEvent() {
         System.out.println("Room[" + roomId + "] is full, Send Ready Message");
         int tmp = 0;
-        for (Session session : sessions.keySet()){
+        for (Session session : sessions.keySet()) {
             StartAction startAction = new StartAction();
-            if (tmp == 0){
+            if (tmp == 0) {
                 startAction.setDetail("Black");
-            }else{
+            } else {
                 startAction.setDetail("White");
             }
             try {
@@ -54,7 +54,7 @@ public class ChessRoom extends Room {
                 result.setModel(startAction);
                 session.getBasicRemote().sendText(JSONObject.toJSONString(result));
                 System.out.println("Send OK");
-            }catch (Exception e){
+            } catch (Exception e) {
                 System.out.println("SendText Error" + e.getMessage());
             }
             tmp++;
@@ -62,14 +62,14 @@ public class ChessRoom extends Room {
     }
 
     @Override
-    public void startGame(){
+    public void startGame() {
         logger.info("Room[" + roomId + "] is allReady, Send GameStart Message!");
         int tmp = 0;
-        for (Session session : sessions.keySet()){
+        for (Session session : sessions.keySet()) {
             StartAction startAction = new StartAction();
-            if (tmp == 0){
+            if (tmp == 0) {
                 startAction.setDetail("Black");
-            }else{
+            } else {
                 startAction.setDetail("White");
             }
             try {
@@ -78,7 +78,7 @@ public class ChessRoom extends Room {
                 result.setModel(startAction);
                 session.getBasicRemote().sendText(JSONObject.toJSONString(result));
                 logger.info("Send Start Message OK");
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("Send Start Message Error");
             }
             tmp++;
@@ -87,12 +87,12 @@ public class ChessRoom extends Room {
     }
 
     @Override
-    public boolean vaildAction(Action action){
-        if (action instanceof ChessAction){
-            if (lastChessAction != null && ((ChessAction) action).getColor().equals(lastChessAction.getColor())){
+    public boolean vaildAction(Action action) {
+        if (action instanceof ChessAction) {
+            if (lastChessAction != null && ((ChessAction) action).getColor().equals(lastChessAction.getColor())) {
                 return false;
             }
-            if (chessBoard[((ChessAction) action).getX()][((ChessAction) action).getY()] != 0){
+            if (chessBoard[((ChessAction) action).getX()][((ChessAction) action).getY()] != 0) {
                 return false;
             }
             chessBoard[((ChessAction) action).getX()][((ChessAction) action).getY()] = ((ChessAction) action).getColor().equals("Black") ? -1 : 1;

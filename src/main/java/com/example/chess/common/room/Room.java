@@ -68,7 +68,7 @@ public abstract class Room {
         }
     }
 
-    public void gameOver(Session s){
+    public void doOver(Session s){
         for (Map.Entry<Session, UserContext> entry : sessions.entrySet()){
             entry.getValue().setGameStatus(UserContext.GAME_STATUS.PENDING);
         }

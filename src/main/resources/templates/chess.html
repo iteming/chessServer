@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <link href="../static/css/chess.css" rel="stylesheet" type="text/css">
@@ -101,11 +101,11 @@
 
         function play(e) {//鼠标点击时发生
             if (allowPlay == false) {
-                alert("游戏还没开始,请耐心等待咯");
+                toastrShow("游戏还没开始,请耐心等待咯", 3);
                 return;
             }
             if (myTurn == false) {
-                alert("请耐心等待对方下完");
+                toastrShow("请耐心等待对方下完", 3);
                 return;
             }
 
@@ -113,7 +113,7 @@
             var y = getAbsoluteY(e.clientY);
 
             if (chessData[x][y] != 0) {//判断该位置是否被下过了
-                alert("你不能在这个位置下棋");
+                toastrShow("你不能在这个位置下棋",0);
                 return;
             }
 
@@ -126,7 +126,7 @@
 
         function drawChess(chess, x, y) {//参数为，棋（1为白棋，2为黑棋），数组位置
             if (isWell == true) {
-                alert("已经结束了，如果需要重新玩，请刷新");
+                toastrShow("已经结束了，如果需要重新玩，请刷新", 0);
                 return;
             }
             if (x >= 0 && x < 15 && y >= 0 && y < 15) {
@@ -227,11 +227,11 @@
         try {
             var webSocket = new WebSocket(host);
             webSocket.onopen = function () {
-                alert("链接成功");
+                toastrShow("链接成功");
                 sendStart();
             }
         } catch (a) {
-            alert(a);
+            toastrShow(a, 0);
         }
 
         function sendStart() {
@@ -245,7 +245,7 @@
         function onMessage(event) {
             result = JSON.parse(event.data);
             if (result.success == false) {
-                alert("系统异常" + event.data);
+                toastrShow("系统异常" + event.data, 0);
             }
             var action = result.model;
             if (action.code == "Start") {
@@ -278,6 +278,7 @@
         function sendReadyMsg() {
             if (isReady == false) {
                 webSocket.send("ready");
+                toastrShow("准备好了")
             }
             isReady = true;
         }
@@ -327,6 +328,7 @@
 </head>
 
 <body onload="drawRect()">
+<div th:insert="~{base :: toastr}"></div>
 <div>
     <div class="game-box">
         <canvas width="640" id="canvas" onmousedown="play(event)" height="640">你的浏览器不支持HTML5 canvas ，请使用 google chrome
