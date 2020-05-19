@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <link href="css/chess.css" rel="stylesheet" type="text/css">
+    <link href="../static/css/chess.css" rel="stylesheet" type="text/css">
     <title></title>
     <style type="text/css">
         body {
@@ -15,17 +15,19 @@
         var isWhite = true;//设置是否该轮到白棋
         var isWell = false;//设置该局棋盘是否赢了，如果赢了就不能再走了
         var myTurn = true;//check is my turn
-        var img_b = new Image();
-        var img_b_now = new Image();
-        var img_w_now = new Image();
         var allowPlay = false;//是否开始
         var isReady = false;
         var host;
-        img_b.src = "images/b.png";//黑棋图片
-        img_b_now.src = "images/b_now.png";//最新的黑棋图片
+
+        var img_b_now = new Image();
+        var img_w_now = new Image();
+        var img_b = new Image();
+        img_b.src = "../static/images/b.png";//黑棋图片
+        img_b_now.src = "../static/images/b_now.png";//最新的黑棋图片
         var img_w = new Image();
-        img_w.src = "images/w.png";//白棋图片
-        img_w_now.src = "images/w_now.png"; //最新的白棋图片
+        img_w.src = "../static/images/w.png";//白棋图片
+        img_w_now.src = "../static/images/w_now.png"; //最新的白棋图片
+
         var last_x = -1;
         var last_y = -1;
 
@@ -44,17 +46,8 @@
             var board = new Image();
             context.fillStyle = "#996600";
             context.fillRect(0, 0, 640, 640);
-//            board.src= "images/board.jpg";
-//            context.drawImage(board, 0, 0, 640, 640);
             context.fillStyle = "#CCFFFF"
-//            context.strokeStyle = "orange"
-//            context.fillRect(0, 0, 640, 640);
-//            context.fillRect(650, 0, 650+60, 60);
-//            context.strokeRect(650, 0, 650 + 60, 60);
-//            context.fillStyle = "#FF3300"
-//            context.font="40px Arial";
-//            context.fillText("房间号:", 650, 45);
-            //context.fillRect(650, 0, 650+60, 60);
+            context.fillText("房间号:", 650, 45);
             context.strokeStyle = "white"
 
             for (var i = 0; i <= 640; i += 40) {//绘制棋盘的线
@@ -87,12 +80,10 @@
         }
 
         function getRelativeX(x) {
-            //var l = document.body.scrollLeft;
             return x * 40 + 20;
         }
 
         function getRelativeY(y) {
-            //var h = document.body.scrollTop;
             return y * 40 + 20;
         }
 
@@ -243,28 +234,15 @@
             alert(a);
         }
 
-        //        var webSocket = new WebSocket(host);
-        //        i = 0;
-        //        while (!webSocket.readyState){
-        //            alert("请耐心等待游戏开始");
-        //            if (i > 5){
-        //                alert("游戏链接失败");
-        //                break;
-        //            }
-        //            i++;
-        //        };
-
         function sendStart() {
             webSocket.send("connect|This is a new Client");
         }
 
         webSocket.onmessage = function (event) {
-            //alert("readMessage" + event.data);
             onMessage(event)
         };
 
         function onMessage(event) {
-            //alert(event.data)
             result = JSON.parse(event.data);
             if (result.success == false) {
                 alert("系统异常" + event.data);
@@ -359,6 +337,5 @@
         <h2 id="tips">请耐心等待另外一位玩家</h2>
     </div>
 </div>
-
 </body>
 </html>
