@@ -244,8 +244,8 @@
         };
 
         function onMessage(event) {
-            result = JSON.parse(event.data);
-            if (result.success == false) {
+            var result = JSON.parse(event.data);
+            if (!result.success) {
                 toastrShow("系统异常" + event.data, 0);
             }
             var action = result.model;
