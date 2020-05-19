@@ -1,0 +1,26 @@
+server:
+  port: 8181
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: chess.srv
+  profiles:
+    active: dev
+  main:
+    allow-bean-definition-overriding: true
+  thymeleaf:
+    prefix: classpath:/templates/
+  http:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+  mvc:
+    static-path-pattern: /static/**
+  datasource:
+    url: jdbc:mysql://47.101.71.10:3306/CHIK?useUnicode=true&characterEncoding=UTF8&serverTimezone=Asia/Shanghai&useSSL=false&autoReconnect=true&autoReconnectForPools=true&allowMultiQueries=true
+    username: root
+    password: ct584521
+    driver-class-name: com.mysql.cj.jdbc.Driver
