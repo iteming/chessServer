@@ -5,89 +5,126 @@
     <title>My WebSocket</title>
 </head>
 <body>
-    <a href="/catan"> 跳转至卡坦岛 </a><br/>
-    <a href="/five"> 跳转至五子棋 </a><br/>
-    监控列表<br/>
-    <div id="message">
+<a href="/catan"> 跳转至卡坦岛 </a><br/>
+<a href="/five"> 跳转至五子棋 </a><br/>
+<a href="#" onclick="clearMessageInnerHTML()"> 清空消息 </a><br/>
+监控列表<br/>
+<div id="message">
 
-    </div>
-    <script type="text/javascript">
-        var ws;
-        var lockReconnect = false; // 避免重复链接
-        var wsUrl = 'ws://' + document.location.host + "/websocket";
+</div>
+<script type="text/javascript">
+    var ws;
+    var lockReconnect = false; // 避免重复链接
+    var wsUrl = 'ws://' + document.location.host + "/websocket";
 
-        // 创建链接
-        function createWebSocket(url) {
-            setMessageInnerHTML("创建WS对象--");
-            try {
-                ws = new WebSocket(url);
-                initEventHandle();
-            } catch (e) {
-                setMessageInnerHTML("创建WS对象失败 --重连--")
-                reconnect(url);
-            }
+    // 创建链接
+    function createWebSocket(url) {
+        setMessageInnerHTML("创建WS对象--");
+        try {
+            ws = new WebSocket(url);
+            initEventHandle();
+        } catch (e) {
+            setMessageInnerHTML("创建WS对象失败 --重连--")
+            reconnect(url);
         }
-        // 关闭链接
-        function closeWebSocket() {
-            setMessageInnerHTML("关闭链接");
-            ws.close();
-        }
+    }
 
-        function initEventHandle() {
-            ws.onclose = function () {
-                setMessageInnerHTML("连接关闭 --重连--");
-                reconnect(wsUrl);
-            };
-            ws.onerror = function (error) {
-                setMessageInnerHTML("链接异常 --重连--");
-                setMessageInnerHTML(error);
-                reconnect(wsUrl);
-            };
-            ws.onopen = function () {
-                setMessageInnerHTML("开启链接 --心跳检测重置--");
-                heartCheck.reset().start();
-            };
-            ws.onmessage = function (event) {
-                // 如果获取到消息，心跳检测重置
-                // 拿到任何消息都说明当前连接是正常的
-                setMessageInnerHTML(event.data);
-                heartCheck.reset().start();
-            }
-        }
+    // 关闭链接
+    function closeWebSocket() {
+        setMessageInnerHTML("关闭链接");
+        ws.close();
+    }
 
-        function setMessageInnerHTML(message) {
-            document.getElementById('message').innerHTML += message +'<br/>';
+    function initEventHandle() {
+        console.log("initEventHandle");
+        ws.onclose = function () {
+            setMessageInnerHTML("连接关闭 --重连--");
+            setMessageInnerHTML("<br/>");
+            setMessageInnerHTML("<br/>");
+            reconnect(wsUrl);
+        };
+        ws.onerror = function (error) {
+            setMessageInnerHTML("链接异常 --重连--");
+            console.log("链接异常 --重连-- :" + JSON.stringify(error));
+            setMessageInnerHTML("异常：【" + JSON.stringify(error) + "】");
+            setMessageInnerHTML("<br/>");
+            setMessageInnerHTML("<br/>");
+            reconnect(wsUrl);
+        };
+        ws.onopen = function () {
+            setMessageInnerHTML("<br/>");
+            setMessageInnerHTML("<br/>");
+            setMessageInnerHTML("开启链接 --心跳检测重置--");
+            heartCheck.reset().start();
+        };
+        ws.onmessage = function (event) {
+            // 如果获取到消息，心跳检测重置
+            // 拿到任何消息都说明当前连接是正常的
+            setMessageInnerHTML(event.data);
+            heartCheck.reset().start();
         }
-        function reconnect(url) {
-            setMessageInnerHTML("正在重连 --");
-            if (lockReconnect) return;
-            lockReconnect = true;
+    }
+
+    function setMessageInnerHTML(message) {
+        document.getElementById('message').innerHTML += message + '<br/>';
+    }
+
+    function clearMessageInnerHTML() {
+        document.getElementById('message').innerHTML = '<br/>';
+    }
+
+    function reconnect(url) {
+        setMessageInnerHTML("正在重连 --");
+        if (lockReconnect) return;
+        lockReconnect = true;
+        this.timeoutObj.push(
             setTimeout(function () {
                 createWebSocket(url);
                 lockReconnect = false;
-            }, 2000);
+            }, 2000)
+        );
+    }
+
+    // 心跳检测
+    var heartCheck = {
+        timeout: 10000, // 10秒
+        timeoutObj: [],
+        reset: function () {
+            setMessageInnerHTML("接收到消息 检测正常");
+            this.timeoutObj.forEach(function (timeoutId) {
+                clearTimeout(timeoutId);
+            });
+            this.timeoutObj = [];
+            return this;
+        },
+        start: function () {
+            // 所有的心跳都是从 整10秒开始执行
+            var dateNow = new Date();
+            var dateNowSecond = dateNow.getSeconds();
+            var surplus = dateNowSecond % 10;
+            this.timeoutObj.push(
+                setTimeout(function () {
+                    runHeartBeat();
+                }, surplus)
+            );
+
+            var _this = this;
+            var runHeartBeat = function () {
+                _this.timeoutObj.push(
+                    setTimeout(function () {
+                        // 这里发送一个心跳，后端收到后，返回一个心跳消息，
+                        // onmessage 拿到返回的心跳说明连接正常
+                        ws.send("HeartBeat");
+                        setMessageInnerHTML("<br/>");
+                        setMessageInnerHTML("发送一个心跳 HeartBeat");
+                        setMessageInnerHTML(dateNow);
+                    }, _this.timeout)
+                );
+            };
         }
+    };
 
-        // 心跳检测
-        var heartCheck = {
-            timeout: 10000, // 6秒
-            timeoutObj: null,
-            reset: function () {
-                setMessageInnerHTML("接收到消息 检测正常");
-                clearTimeout(this.timeoutObj);
-                return this;
-            },
-            start: function () {
-                this.timeoutObj = setTimeout(function () {
-                    // 这里发送一个心跳，后端收到后，返回一个心跳消息，
-                    // onmessage 拿到返回的心跳说明连接正常
-                    ws.send("HeartBeat");
-                    setMessageInnerHTML("发送一个心跳 HeartBeat");
-                }, this.timeout);
-            }
-        };
-
-        createWebSocket(wsUrl);
-    </script>
+    createWebSocket(wsUrl);
+</script>
 </body>
 </html>
