@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>My WebSocket</title>
+    <meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1">
+    <meta name=renderer content=webkit>
+    <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+    <link href="../static/css/chess.css" rel="stylesheet" type="text/css">
+    <title>卡坦岛</title>
+    <style type="text/css">
+        body {
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
-    <a href="/catan"> 跳转至卡坦岛 </a><br/>
-    <a href="/five"> 跳转至五子棋 </a><br/>
     监控列表<br/>
     <div id="message">
 
@@ -14,7 +20,7 @@
     <script type="text/javascript">
         var ws;
         var lockReconnect = false; // 避免重复链接
-        var wsUrl = 'ws://' + document.location.host + "/websocket";
+        var wsUrl = 'ws://' + document.location.host + "/Catan";
 
         // 创建链接
         function createWebSocket(url) {

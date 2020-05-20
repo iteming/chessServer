@@ -1,7 +1,6 @@
-package com.example.chess.common.room;
+package com.example.chess.entity.base;
 
-import com.example.chess.common.Action;
-import com.example.chess.common.context.UserContext;
+import com.example.chess.entity.common.UserContext;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

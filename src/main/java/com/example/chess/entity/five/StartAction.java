@@ -1,5 +1,6 @@
-package com.example.chess.common;
+package com.example.chess.entity.five;
 
+import com.example.chess.entity.base.Action;
 import lombok.Data;
 
 /**

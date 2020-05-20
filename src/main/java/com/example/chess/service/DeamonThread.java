@@ -1,6 +1,6 @@
 package com.example.chess.service;
 
-import com.example.chess.common.RunContext;
+import com.example.chess.entity.RunContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,5 +1,6 @@
-package com.example.chess.common.role;
+package com.example.chess.entity.play;
 
+import com.example.chess.entity.base.BaseRole;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,21 +33,21 @@ public class Player extends BaseRole {
     @Setter
     Boolean readyStatus;
 
-    public Player(Session session){
+    public Player(Session session) {
         this.session = session;
     }
 
-    public Player initSession(Session session){
+    public Player initSession(Session session) {
         this.session = session;
         return this;
     }
 
-    public Player initColor(String color){
+    public Player initColor(String color) {
         this.color = color;
         return this;
     }
 
-    public Player initReadyStatus(boolean readyStatus){
+    public Player initReadyStatus(boolean readyStatus) {
         this.readyStatus = readyStatus;
         return this;
     }

@@ -1,5 +1,7 @@
-package com.example.chess.common.role;
+package com.example.chess.entity.play;
 
+
+import com.example.chess.entity.base.BaseRole;
 
 /**
  * 观战者

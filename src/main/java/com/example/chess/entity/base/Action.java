@@ -1,4 +1,4 @@
-package com.example.chess.common;
+package com.example.chess.entity.base;
 
 /**
  * Created by chanming on 16/7/13.

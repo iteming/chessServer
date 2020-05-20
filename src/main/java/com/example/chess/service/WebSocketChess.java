@@ -1,11 +1,11 @@
 package com.example.chess.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.chess.common.ChessAction;
-import com.example.chess.common.Result;
-import com.example.chess.common.RunContext;
-import com.example.chess.common.room.ChessRoom;
-import com.example.chess.common.room.Room;
+import com.example.chess.entity.five.FiveAction;
+import com.example.chess.entity.base.Result;
+import com.example.chess.entity.RunContext;
+import com.example.chess.entity.five.FiveRoom;
+import com.example.chess.entity.base.Room;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -53,12 +53,12 @@ public class WebSocketChess {
             doConnect(session, message);
         } else if (message.startsWith("chess")) {
             String content = message.substring(5);
-            ChessAction chessAction = JSONObject.parseObject(content, ChessAction.class);
-            chessAction.setCode("Chess");
+            FiveAction fiveAction = JSONObject.parseObject(content, FiveAction.class);
+            fiveAction.setCode("Chess");
             Room room = roomMap.get(roomId);
-            if (room.validAction(chessAction)) {
+            if (room.validAction(fiveAction)) {
                 Result result = new Result();
-                result.setData(chessAction);
+                result.setData(fiveAction);
                 room.broadcast(JSONObject.toJSONString(result));
             }
         } else if (message.startsWith("ready")) {
@@ -134,7 +134,7 @@ public class WebSocketChess {
                 session.getBasicRemote().sendText(JSONObject.toJSONString(result));
             }
         } else {
-            Room room = new ChessRoom(roomId, 2);
+            Room room = new FiveRoom(roomId, 2);
             room.enterRoom(session);
             roomMap.put(roomId, room);
             session.getUserProperties().put("roomId", roomId);

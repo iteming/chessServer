@@ -1,4 +1,4 @@
-package com.example.chess.common.context;
+package com.example.chess.entity.common;
 
 import lombok.Getter;
 import lombok.Setter;

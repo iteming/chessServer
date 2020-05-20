@@ -1,11 +1,10 @@
 package com.example.chess.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.chess.entity.five.FiveAction;
 import com.example.chess.entity.base.Result;
-import com.example.chess.entity.RunContext;
-import com.example.chess.entity.five.FiveRoom;
 import com.example.chess.entity.base.Room;
+import com.example.chess.entity.five.FiveAction;
+import com.example.chess.entity.five.FiveRoom;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -16,28 +15,20 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-@ServerEndpoint("/Catan")
+@ServerEndpoint("/websocket")
 @Component
-public class WebsocketCatan {
+public class WebsocketTest {
 
     // 静态变量，用来记录当前在线链接数。应该把他设计成线程安全的。
     private static int onlineCount = 0;
 
     // 用来存放每个客户端对应的myWebSocket对象。
-    private static CopyOnWriteArraySet<WebsocketCatan> user = new CopyOnWriteArraySet<>();
+    private static CopyOnWriteArraySet<WebsocketTest> user = new CopyOnWriteArraySet<>();
 
     private static ConcurrentHashMap<String, Room> roomMap = new ConcurrentHashMap<String, Room>();
 
     // 客户端发送数据对象
     private Session session;
-
-    static {
-        System.out.println("Deamon Thread Created!");
-        RunContext context = new RunContext(roomMap);
-        DeamonThread deamonThread = new DeamonThread(context);
-        Thread dThread = new Thread(deamonThread);
-        dThread.start();
-    }
 
     /**
      * 连接成功时调用的方法
@@ -92,7 +83,7 @@ public class WebsocketCatan {
     @OnMessage
     public void onMessage(String message, Session session) throws IOException, InterruptedException {
         // 群发消息给前端
-        for (WebsocketCatan myWebSocket: user){
+        for (WebsocketTest myWebSocket: user){
             myWebSocket.session.getBasicRemote().sendText(session.getId());
         }
 
@@ -150,10 +141,10 @@ public class WebsocketCatan {
         return onlineCount;
     }
     private static synchronized void addOnlineCount() {
-        WebsocketCatan.onlineCount++;
+        WebsocketTest.onlineCount++;
     }
     private static synchronized void subOnlineCount() {
-        WebsocketCatan.onlineCount--;
+        WebsocketTest.onlineCount--;
     }
 
 

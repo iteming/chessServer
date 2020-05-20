@@ -1,4 +1,4 @@
-package com.example.chess.common;
+package com.example.chess.entity.base;
 
 import lombok.Data;
 

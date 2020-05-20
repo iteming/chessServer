@@ -1,10 +1,9 @@
-package com.example.chess.common.room;
+package com.example.chess.entity.five;
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.chess.common.Action;
-import com.example.chess.common.ChessAction;
-import com.example.chess.common.Result;
-import com.example.chess.common.StartAction;
+import com.example.chess.entity.base.Action;
+import com.example.chess.entity.base.Result;
+import com.example.chess.entity.base.Room;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.websocket.Session;
@@ -14,13 +13,13 @@ import java.util.Date;
  * Created by chanming on 16/7/14.
  */
 @Slf4j
-public class ChessRoom extends Room {
+public class FiveRoom extends Room {
 
     private Integer[][] chessBoard = new Integer[16][16];
     private int maxSize = 16;
-    private ChessAction lastChessAction;
+    private FiveAction lastFiveAction;
 
-    public ChessRoom(String roomId, int totalNumber) {
+    public FiveRoom(String roomId, int totalNumber) {
         this.roomId = roomId;
         this.totalNumber = totalNumber;
         this.createTime = new Date();
@@ -92,14 +91,14 @@ public class ChessRoom extends Room {
 
     @Override
     public boolean validAction(Action action) {
-        if (action instanceof ChessAction) {
-            if (lastChessAction != null && ((ChessAction) action).getColor().equals(lastChessAction.getColor())) {
+        if (action instanceof FiveAction) {
+            if (lastFiveAction != null && ((FiveAction) action).getColor().equals(lastFiveAction.getColor())) {
                 return false;
             }
-            if (chessBoard[((ChessAction) action).getX()][((ChessAction) action).getY()] != 0) {
+            if (chessBoard[((FiveAction) action).getX()][((FiveAction) action).getY()] != 0) {
                 return false;
             }
-            chessBoard[((ChessAction) action).getX()][((ChessAction) action).getY()] = ((ChessAction) action).getColor().equals("Black") ? -1 : 1;
+            chessBoard[((FiveAction) action).getX()][((FiveAction) action).getY()] = ((FiveAction) action).getColor().equals("Black") ? -1 : 1;
             return true;
         }
         return false;
