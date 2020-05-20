@@ -35,7 +35,7 @@ public class WebsocketTest {
         user.add(this);
 
         // 发送消息给前端
-        this.sendMessage("你分配的用户名：" + session.getId());
+        this.sendMessage("你分配的用户名：" + session.getId(), this.session);
         // 在线数加1
         addOnlineCount();
         this.sendMessage("有新加入链接！当前在线人数为： --"+ getOnlineCount() +"--");
@@ -53,6 +53,7 @@ public class WebsocketTest {
 
         // 在线人数减1
         subOnlineCount();
+
         this.sendMessage("有一连接关闭！当前在线人数为： --"+ getOnlineCount() +"--");
 
         System.out.println("Connection closed");
@@ -66,10 +67,7 @@ public class WebsocketTest {
      */
     @OnMessage
     public void onMessage(String message, Session session) throws IOException, InterruptedException {
-        // 群发消息给前端
-        for (WebsocketTest myWebSocket: user){
-            myWebSocket.session.getBasicRemote().sendText(session.getId());
-        }
+        sendMessage(message);
 
         // 控制台打印前端发送过来的消息
         System.out.println(message);
@@ -90,11 +88,20 @@ public class WebsocketTest {
      * 给客户端传递消息
      * @param message 消息内容
      */
-    public void sendMessage(String message) {
+    public void sendMessage(String message, Session ...currentSession) {
         try {
-            System.out.println("传递消息给前端：" + message);
-            this.session.getBasicRemote().sendText(message);
-        } catch (Exception e){
+            if (currentSession.length != 0) {
+                // 发送消息给当前用户
+                System.out.println("传递消息给前端：" + message);
+                this.session.getBasicRemote().sendText(message);
+                return;
+            }
+
+            // 群发消息给前端
+            for (WebsocketTest myWebSocket: user){
+                myWebSocket.session.getBasicRemote().sendText("[" + session.getId() + "]" + message);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

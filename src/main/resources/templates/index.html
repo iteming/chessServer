@@ -77,12 +77,10 @@
         setMessageInnerHTML("正在重连 --");
         if (lockReconnect) return;
         lockReconnect = true;
-        this.timeoutObj.push(
-            setTimeout(function () {
-                createWebSocket(url);
-                lockReconnect = false;
-            }, 2000)
-        );
+        setTimeout(function () {
+            createWebSocket(url);
+            lockReconnect = false;
+        }, 2000);
     }
 
     // 心跳检测
