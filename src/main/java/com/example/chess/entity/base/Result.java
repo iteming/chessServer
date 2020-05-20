@@ -1,22 +1,152 @@
 package com.example.chess.entity.base;
 
+import com.example.chess.protocol.ICode;
+import com.example.chess.protocol.SysErrorEnum;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
- * Created by chanming on 16/7/20.
+ * @author 江斌  <br/>
+ * @version 1.0  <br/>
+ * @ClassName: Result <br/>
+ * @date: 2019/9/23 11:31 <br/>
+ * @Description: 返回的数据模型 <br/>
+ * @since JDK 1.8
  */
 @Data
-public class Result {
+public class Result<T> implements Serializable {
     /**
-     * 是否成功
+     * 状态值
      */
-    private Boolean code = true;
+    private int status;
     /**
-     * 错误信息
+     * 状态翻译
      */
     private String message;
     /**
-     * 返回实体
+     * 请求路径
      */
-    private Object data;
+    private String path;
+    /**
+     * 时间戳
+     */
+    private String timestamp;
+    /**
+     * 返回对象
+     */
+    private T data;
+
+    public Result() {
+
+    }
+
+    public Result(ICode code) {
+        this.status = code.getCode();
+        this.message = code.getMessage();
+    }
+
+    public Result(ICode code, T data) {
+        this.status = code.getCode();
+        this.message = code.getMessage();
+        this.data = data;
+    }
+
+    public Result(int status, String message, T data) {
+        this.status = status;
+        this.message = message;
+        this.data = data;
+    }
+
+    public Result(int status, String message) {
+        this.status = status;
+        this.message = message;
+    }
+
+    public boolean isSucceed() {
+        return SysErrorEnum.SUCCESS.getCode() == status;
+    }
+
+    /**
+     * 操作成功
+     *
+     * @return
+     */
+    public static Result success() {
+        return new Result(SysErrorEnum.SUCCESS);
+    }
+
+    /**
+     * 操作成功
+     *
+     * @param data
+     * @return
+     */
+    public static <T> Result<T> success(T data) {
+        return new Result<>(SysErrorEnum.SUCCESS, data);
+    }
+
+    /**
+     * 操作失败
+     *
+     * @return
+     */
+    public static Result failed() {
+        return new Result(SysErrorEnum.FAILED);
+    }
+
+    /**
+     * 操作失败
+     *
+     * @param data
+     * @return
+     */
+    public static <T> Result<T> failed(T data) {
+        return new Result<>(SysErrorEnum.FAILED, data);
+    }
+
+    /**
+     * 自定义返回
+     *
+     * @param code
+     * @return
+     */
+    public static Result custom(ICode code) {
+        return custom(code, null);
+    }
+
+    /**
+     * 自定义返回
+     *
+     * @param message
+     * @return
+     */
+    public static Result custom(int status, String message) {
+        return new Result(status, message);
+    }
+
+    /**
+     * 自定义返回
+     *
+     * @param message
+     * @param data
+     * @return
+     */
+    public static <T> Result<T> custom(int status, String message, T data) {
+        return new Result<>(status, message, data);
+    }
+
+    /**
+     * 自定义返回
+     *
+     * @param code
+     * @param data
+     * @return
+     */
+    public static <T> Result<T> custom(ICode code, T data) {
+        return new Result<>(code, data);
+    }
+
+
 }
+

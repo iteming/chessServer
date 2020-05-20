@@ -1,4 +1,4 @@
-package com.example.chess.entity.common;
+package com.example.chess.entity.play;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +10,7 @@ import javax.websocket.Session;
  * Created by chanming on 16/7/29.
  */
 
-public class UserContext {
+public class UserContext<T> {
 
     private Session session;
 
@@ -44,4 +44,6 @@ public class UserContext {
     public boolean isReady() {
         return gameStatus == GAME_STATUS.READY;
     }
+
+    private @Getter @Setter T player;
 }

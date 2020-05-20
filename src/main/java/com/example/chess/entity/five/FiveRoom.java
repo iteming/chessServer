@@ -2,10 +2,11 @@ package com.example.chess.entity.five;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.chess.entity.base.Action;
-import com.example.chess.entity.base.Result;
+import com.example.chess.entity.base.ChessResult;
 import com.example.chess.entity.base.Room;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.constraints.Null;
 import javax.websocket.Session;
 import java.util.Date;
 
@@ -13,7 +14,7 @@ import java.util.Date;
  * Created by chanming on 16/7/14.
  */
 @Slf4j
-public class FiveRoom extends Room {
+public class FiveRoom extends Room<Null> {
 
     private Integer[][] chessBoard = new Integer[16][16];
     private int maxSize = 16;
@@ -53,10 +54,10 @@ public class FiveRoom extends Room {
                 startAction.setDetail("White");
             }
             try {
-                Result result = new Result();
+                ChessResult chessResult = new ChessResult();
                 startAction.setCode("fullEvent");
-                result.setData(startAction);
-                session.getBasicRemote().sendText(JSONObject.toJSONString(result));
+                chessResult.setData(startAction);
+                session.getBasicRemote().sendText(JSONObject.toJSONString(chessResult));
                 System.out.println("Send OK");
             } catch (Exception e) {
                 System.out.println("SendText Error" + e.getMessage());
@@ -77,9 +78,9 @@ public class FiveRoom extends Room {
                 startAction.setDetail("White");
             }
             try {
-                Result result = new Result();
-                result.setData(startAction);
-                session.getBasicRemote().sendText(JSONObject.toJSONString(result));
+                ChessResult chessResult = new ChessResult();
+                chessResult.setData(startAction);
+                session.getBasicRemote().sendText(JSONObject.toJSONString(chessResult));
                 log.info("Send Start Message OK");
             } catch (Exception e) {
                 log.error("Send Start Message Error");

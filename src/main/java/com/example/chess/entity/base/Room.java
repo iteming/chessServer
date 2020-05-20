@@ -1,6 +1,6 @@
 package com.example.chess.entity.base;
 
-import com.example.chess.entity.common.UserContext;
+import com.example.chess.entity.play.UserContext;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import java.util.Map;
  * Created by chanming on 16/7/14.
  */
 @Slf4j
-public abstract class Room {
+public abstract class Room<T> {
     /**
      * 房间ID
      */
@@ -48,7 +48,7 @@ public abstract class Room {
      */
     protected @Getter
     @Setter
-    Map<Session, UserContext> sessions = new HashMap<Session, UserContext>();
+    Map<Session, UserContext<T>> sessions = new HashMap<Session, UserContext<T>>();
 
     /**
      * 初始化棋盘数据
@@ -60,9 +60,12 @@ public abstract class Room {
     /**
      * broadcast 广播给所有用户
      */
-    public void broadcast(String buffer) {
+    public void broadcast(String buffer, Session self) {
         for (Session session : sessions.keySet()) {
             try {
+                if (self != null && self != session) {
+                    session.getBasicRemote().sendText(buffer);
+                }
                 session.getBasicRemote().sendText(buffer);
             } catch (Exception e) {
                 System.out.println("Error\n");
@@ -82,21 +85,17 @@ public abstract class Room {
      * 进入房间
      */
     public boolean enterRoom(Session session) {
-        if (nowNumber < totalNumber) {
-            sessions.put(session, new UserContext(session));
+        if (!isFull()) {
+            sessions.put(session, new UserContext<T>(session));
             nowNumber++;
 
             // 所有用户都已进入房间后，广播房间已满消息
-            if (nowNumber == totalNumber) {
+            if (isFull()) {
                 fullEvent();
             }
             return true;
         }
 
-        // 所有用户都已进入房间后，广播房间已满消息
-        if (nowNumber == totalNumber) {
-            fullEvent();
-        }
         return false;
     }
 
@@ -115,14 +114,14 @@ public abstract class Room {
     public void doReady(Session session) {
         if (session == null) {
             // 所有用户开始准备
-            for (Map.Entry<Session, UserContext> entry : sessions.entrySet()) {
+            for (Map.Entry<Session, UserContext<T>> entry : sessions.entrySet()) {
                 entry.getValue().setGameStatus(UserContext.GAME_STATUS.READY);
             }
             if (checkAllReady()) {
                 startGame();
             }
         } else {
-            UserContext userContext = sessions.get(session);
+            UserContext<T> userContext = sessions.get(session);
             userContext.setGameStatus(UserContext.GAME_STATUS.READY);
             if (checkAllReady()) {
                 startGame();
@@ -136,11 +135,11 @@ public abstract class Room {
     public void doOver(Session session) {
         if (session == null) {
             // 所有用户取消准备
-            for (Map.Entry<Session, UserContext> entry : sessions.entrySet()) {
+            for (Map.Entry<Session, UserContext<T>> entry : sessions.entrySet()) {
                 entry.getValue().setGameStatus(UserContext.GAME_STATUS.PENDING);
             }
         } else {
-            UserContext userContext = sessions.get(session);
+            UserContext<T> userContext = sessions.get(session);
             userContext.setGameStatus(UserContext.GAME_STATUS.PENDING);
         }
     }
@@ -150,7 +149,7 @@ public abstract class Room {
      * 游戏开始事件
      */
     public void startGame() {
-        for (Map.Entry<Session, UserContext> each : sessions.entrySet()) {
+        for (Map.Entry<Session, UserContext<T>> each : sessions.entrySet()) {
             each.getValue().setGameStatus(UserContext.GAME_STATUS.RUNNING);
         }
     }
@@ -159,10 +158,10 @@ public abstract class Room {
      * 检查所有的选手是否已经准备完成
      */
     private boolean checkAllReady() {
-        if (nowNumber < totalNumber) {
+        if (!isFull()) {
             return false;
         }
-        for (Map.Entry<Session, UserContext> each : sessions.entrySet()) {
+        for (Map.Entry<Session, UserContext<T>> each : sessions.entrySet()) {
             if (!each.getValue().isReady()) {
                 return false;
             }
@@ -175,6 +174,13 @@ public abstract class Room {
      */
     public boolean validAction(Action action) {
         return true;
+    }
+
+    /**
+     * 判断房间是否已经满了
+     */
+    public boolean isFull(){
+        return !(nowNumber < totalNumber);
     }
 
     @Override

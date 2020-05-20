@@ -1,4 +1,4 @@
-package com.example.chess.service;
+package com.example.chess.websocket;
 
 import com.example.chess.entity.RunContext;
 import org.slf4j.Logger;

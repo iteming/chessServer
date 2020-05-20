@@ -1,4 +1,4 @@
-package com.example.chess.service;
+package com.example.chess.websocket;
 
 import com.example.chess.entity.base.Room;
 import org.springframework.stereotype.Component;

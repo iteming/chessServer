@@ -257,13 +257,13 @@
         };
 
         function onMessage(event) {
-            var result = JSON.parse(event.data);
-            console.log("onMessage" + result);
-            if (!result.code) {
-                toastrShow("系统异常:" + result.message, 0);
+            var chessResult = JSON.parse(event.data);
+            console.log("onMessage" + chessResult);
+            if (!chessResult.code) {
+                toastrShow("系统异常:" + chessResult.message, 0);
                 return;
             }
-            var action = result.data;
+            var action = chessResult.data;
             if (action.code == "Start") {
                 startGame(action);
             } else if (action.code == "Chess") {

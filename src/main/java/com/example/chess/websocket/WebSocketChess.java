@@ -1,8 +1,8 @@
-package com.example.chess.service;
+package com.example.chess.websocket;
 
 import com.alibaba.fastjson.JSONObject;
+import com.example.chess.entity.base.ChessResult;
 import com.example.chess.entity.five.FiveAction;
-import com.example.chess.entity.base.Result;
 import com.example.chess.entity.RunContext;
 import com.example.chess.entity.five.FiveRoom;
 import com.example.chess.entity.base.Room;
@@ -57,9 +57,9 @@ public class WebSocketChess {
             fiveAction.setCode("Chess");
             Room room = roomMap.get(roomId);
             if (room.validAction(fiveAction)) {
-                Result result = new Result();
-                result.setData(fiveAction);
-                room.broadcast(JSONObject.toJSONString(result));
+                ChessResult chessResult = new ChessResult();
+                chessResult.setData(fiveAction);
+                room.broadcast(JSONObject.toJSONString(chessResult), null);
             }
         } else if (message.startsWith("ready")) {
             doReady(session, message);
@@ -128,10 +128,10 @@ public class WebSocketChess {
                 session.getUserProperties().put("roomId", roomId);
             } else {
                 System.out.println("---- 进入房间失败 ----");
-                Result result = new Result();
-                result.setCode(false);
-                result.setMessage("进入房间失败");
-                session.getBasicRemote().sendText(JSONObject.toJSONString(result));
+                ChessResult chessResult = new ChessResult();
+                chessResult.setCode(false);
+                chessResult.setMessage("进入房间失败");
+                session.getBasicRemote().sendText(JSONObject.toJSONString(chessResult));
             }
         } else {
             Room room = new FiveRoom(roomId, 2);
