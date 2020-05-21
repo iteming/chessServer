@@ -31,3 +31,12 @@ spring:
     username: root
     password: ct584521
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+
+logging:
+#  kafka:
+#    topic: log_topic
+#    servers: ${info.kafkaUrl}
+#  config: classpath:logback-kafka.xml
+  level:
+    com.example: debug

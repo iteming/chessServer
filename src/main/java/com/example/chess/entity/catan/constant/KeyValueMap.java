@@ -15,6 +15,7 @@ public class KeyValueMap {
 
     private Integer value;
 
+    public KeyValueMap(){ }
     public KeyValueMap(Integer id, PropertyEnum property){
         this.id = id;
         this.property = property;

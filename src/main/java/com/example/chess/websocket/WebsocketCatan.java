@@ -32,6 +32,7 @@ public class WebsocketCatan {
 
     static {
         System.out.println("Deamon Thread Created!");
+        log.debug("Deamon Thread Created! ----- ");
         RunContext context = new RunContext(roomMap);
         DeamonThread deamonThread = new DeamonThread(context);
         Thread dThread = new Thread(deamonThread);

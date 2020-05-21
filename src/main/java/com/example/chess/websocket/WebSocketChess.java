@@ -2,10 +2,9 @@ package com.example.chess.websocket;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.chess.entity.base.ChessResult;
-import com.example.chess.entity.five.FiveAction;
-import com.example.chess.entity.RunContext;
-import com.example.chess.entity.five.FiveRoom;
 import com.example.chess.entity.base.Room;
+import com.example.chess.entity.five.FiveAction;
+import com.example.chess.entity.five.FiveRoom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -35,14 +34,14 @@ public class WebSocketChess {
 
     private static ConcurrentHashMap<String, Room> roomMap = new ConcurrentHashMap<String, Room>();
 
-    static {
-        System.out.println(" chess static ");
-        RunContext context = new RunContext(roomMap);
-        DeamonThread deamonThread = new DeamonThread(context);
-        Thread dThread = new Thread(deamonThread);
-        logger.info("Deamon Thread Created!");
-        dThread.start();
-    }
+//    static {
+//        System.out.println(" chess static ");
+//        RunContext context = new RunContext(roomMap);
+//        DeamonThread deamonThread = new DeamonThread(context);
+//        Thread dThread = new Thread(deamonThread);
+//        logger.info("Deamon Thread Created!");
+//        dThread.start();
+//    }
 
     @OnMessage
     public void onMessage(String message, Session session)
