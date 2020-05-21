@@ -1,5 +1,6 @@
 package com.example.chess.entity.catan;
 
+import com.example.chess.entity.catan.constant.ResourcesEnum;
 import lombok.Data;
 
 @Data

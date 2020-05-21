@@ -1,4 +1,4 @@
-package com.example.chess.entity.catan;
+package com.example.chess.entity.catan.constant;
 
 public enum ResourcesEnum {
 

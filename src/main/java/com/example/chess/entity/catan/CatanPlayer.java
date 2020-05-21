@@ -1,5 +1,6 @@
 package com.example.chess.entity.catan;
 
+import com.example.chess.entity.catan.constant.UserStatusEnum;
 import lombok.Data;
 
 import java.util.List;

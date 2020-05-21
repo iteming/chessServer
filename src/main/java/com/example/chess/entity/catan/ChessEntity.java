@@ -1,5 +1,7 @@
 package com.example.chess.entity.catan;
 
+import com.example.chess.entity.catan.constant.ChessEntityEnum;
+import com.example.chess.entity.catan.constant.KeyValueMap;
 import lombok.Data;
 
 @Data
@@ -16,10 +18,14 @@ public class ChessEntity {
     private ChessEntityEnum type;
 
     /**
-     * 位置 (节点 0，路 1)
+     * 节点 0 的时候，记录所属<棋牌id = id, 节点id = value>
+     * type == 1 || type == 3
      */
-    private int posType;
-    private int pos1;
-    private int pos2;
-    private int pos3;
+    private KeyValueMap nodePosition;
+
+    /**
+     * 道路 1 的时候，记录所属<棋牌id = id, 节点起 = key，节点止 = value>
+     * type == 2
+     */
+    private KeyValueMap roadPosition;
 }
