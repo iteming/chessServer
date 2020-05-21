@@ -14,7 +14,7 @@
 </head>
 <body>
 <a href="#" onclick="doConnect()"> 开始匹配 </a><br/>
-<a href="#" onclick="clearMessageInnerHTML()"> 清空消息 1 </a><br/>
+<a href="#" onclick="clearMessageInnerHTML()"> 清空消息 </a><br/>
 监控列表<br/>
 <div id="message">
 
@@ -23,6 +23,7 @@
     var ws;
     var lockReconnect = false; // 避免重复链接
     var wsUrl = 'ws://' + document.location.host + "/catan";
+    wsUrl += "?roomId=";
 
     // 创建链接
     function createWebSocket(url) {
@@ -89,7 +90,8 @@
             status: 3,
             message: "开始匹配"
         };
-        ws.send(action)
+
+        ws.send(JSON.stringify(action))
     }
     createWebSocket(wsUrl);
 </script>

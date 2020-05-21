@@ -29,12 +29,12 @@ public abstract class Room<T> {
     @Setter
     int totalNumber;
 
-    /**
-     * 现有人数
-     */
-    protected @Getter
-    @Setter
-    int nowNumber;
+//    /**
+//     * 现有人数
+//     */
+//    protected @Getter
+//    @Setter
+//    int nowNumber;
 
     /**
      * 创建时间
@@ -63,10 +63,13 @@ public abstract class Room<T> {
     public void broadcast(String buffer, Session self) {
         for (Session session : sessions.keySet()) {
             try {
-                if (self != null && self != session) {
+                if (self != null) {
+                    if (self != session) {
+                        session.getBasicRemote().sendText(buffer);
+                    }
+                } else {
                     session.getBasicRemote().sendText(buffer);
                 }
-                session.getBasicRemote().sendText(buffer);
             } catch (Exception e) {
                 System.out.println("Error\n");
                 log.error("Error\n" + e);
@@ -87,7 +90,7 @@ public abstract class Room<T> {
     public boolean enterRoom(Session session) {
         if (!isFull()) {
             sessions.put(session, new UserContext<T>(session));
-            nowNumber++;
+//            nowNumber++;
 
             // 所有用户都已进入房间后，广播房间已满消息
             if (isFull()) {
@@ -104,7 +107,7 @@ public abstract class Room<T> {
      */
     public void leaveRoom(Session session) {
         sessions.remove(session);
-        nowNumber--;
+//        nowNumber--;
     }
 
 
@@ -179,8 +182,9 @@ public abstract class Room<T> {
     /**
      * 判断房间是否已经满了
      */
-    public boolean isFull(){
-        return !(nowNumber < totalNumber);
+    public boolean isFull() {
+//        return !(nowNumber < totalNumber);
+        return !(sessions.size() < totalNumber);
     }
 
     @Override

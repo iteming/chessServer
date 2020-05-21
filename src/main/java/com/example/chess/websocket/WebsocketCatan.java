@@ -61,9 +61,11 @@ public class WebsocketCatan {
      * @throws IOException
      */
     @OnClose
-    public void onClose() throws IOException {
+    public void onClose() throws IOException, InterruptedException {
         // 在线人数减1
         subOnlineCount();
+
+        leaveRoom(session, "");
 
         log.debug("有一连接关闭！当前在线人数为： --" + getOnlineCount() + "--");
         log.debug("[" + this.session.getId() + "] Connection closed");
@@ -76,7 +78,10 @@ public class WebsocketCatan {
      * @param error
      */
     @OnError
-    public void onError(Session session, Throwable error) {
+    public void onError(Session session, Throwable error) throws IOException, InterruptedException {
+
+        leaveRoom(session, "");
+
         log.error("发生错误" + error.getMessage());
         error.printStackTrace();
     }
@@ -145,16 +150,19 @@ public class WebsocketCatan {
      */
     private void doReady(Session session, String message) throws IOException, InterruptedException {
         Room room = getRoom(session);
+        if (room == null) return;
         room.doReady(session);
     }
 
     private void doOver(Session session, String message) throws IOException, InterruptedException {
         Room room = getRoom(session);
+        if (room == null) return;
         room.doOver(session);
     }
 
     private void leaveRoom(Session session, String message) throws IOException, InterruptedException {
         Room room = getRoom(session);
+        if (room == null) return;
         room.leaveRoom(session);
     }
 
@@ -163,7 +171,9 @@ public class WebsocketCatan {
     }
 
     private Room getRoom(Session session) {
-        return roomMap.get(getRoomId(session));
+        String roomId = getRoomId(session);
+        if (roomId == null) return null;
+        return roomMap.get(roomId);
     }
 
     /**
@@ -183,20 +193,23 @@ public class WebsocketCatan {
      */
     private boolean doConnect(Session session, Result message) throws IOException, InterruptedException {
         List<String> roomList = session.getRequestParameterMap().get("roomId");
-        String roomId = roomList.get(0);
+        String roomId = roomList != null ? roomList.get(0) : null;
         log.info("A new Client Connect and the roomid is [" + roomId + "]");
 
         Room room;
         // 如果没有输入 roomId ，则自动匹配 room
-        if (roomId == null) {
+        if (roomId == null || roomId.equals("")) {
             room = matchRoom();
         } else {
             room = roomMap.get(roomId);
+            if (room == null) {
+                room = createRoom(roomId);
+            }
         }
 
         // 进入房间
         if (room.enterRoom(session)) {
-            session.getUserProperties().put("roomId", roomId);
+            session.getUserProperties().put("roomId", room.getRoomId());
             return true;
         } else {
             log.debug("---- 进入房间失败 ----");
@@ -217,14 +230,16 @@ public class WebsocketCatan {
             }
         }
         // 如果全都满了，则再重新创建一个房间
-        return createRoom();
+        return createRoom(null);
     }
 
     /**
      * 创建房间
      */
-    private Room createRoom() {
-        String roomId = "RM" + String.format("%04d", roomMap.size() + 1);
+    private Room createRoom(String roomId) {
+        if (roomId == null) {
+            roomId = "RM" + String.format("%04d", roomMap.size() + 1);
+        }
         Room room = new CatanRoom(roomId, total);
         roomMap.put(roomId, room);
         return room;

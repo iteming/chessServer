@@ -156,6 +156,9 @@ public class CatanRoom extends Room<CatanPlayer> {
         for (Map.Entry<Session, UserContext<CatanPlayer>> entry : sessions.entrySet()) {
             // 玩家
             CatanPlayer catanPlayer = entry.getValue().getPlayer();
+            if (catanPlayer == null) {
+                catanPlayer = new CatanPlayer();
+            }
             catanPlayer.setStatus(UserStatusEnum.WAIT);
             catanPlayer.setIsDone(true); // TODO: 全都执行过了，这样方便开始第一轮循环
             catanPlayer.setNumber(sortNumber);
@@ -165,6 +168,7 @@ public class CatanRoom extends Room<CatanPlayer> {
             catanPlayer.setRoundUsedDevelopCards(0);
             catanPlayer.setChessEntity(new ArrayList<>());
             catanPlayer.setResources(new ArrayList<>());
+            entry.getValue().setPlayer(catanPlayer);
         }
     }
 

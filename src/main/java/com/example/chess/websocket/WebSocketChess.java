@@ -153,7 +153,7 @@ public class WebSocketChess {
             Room room = roomMap.get(roomId);
             if (room != null) {
                 room.leaveRoom(session);
-                if (room.getNowNumber() <= 0) {
+                if (room.getSessions().size() <= 0) {
                     roomMap.remove(roomId);
                 }
             }
