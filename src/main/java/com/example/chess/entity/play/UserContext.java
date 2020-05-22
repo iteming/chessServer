@@ -3,8 +3,6 @@ package com.example.chess.entity.play;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.websocket.Session;
-
 
 /**
  * Created by chanming on 16/7/29.
@@ -12,17 +10,12 @@ import javax.websocket.Session;
 
 public class UserContext<T> {
 
-    private Session session;
+    private @Getter @Setter T player;
+    private @Getter @Setter int gameStatus;
 
-    public UserContext(Session session, T player) {
-        this.session = session;
+    public UserContext(T player) {
         this.player = player;
     }
-
-    /**
-     * 游戏状态
-     */
-    private @Getter @Setter int gameStatus;
 
     public interface GAME_STATUS {
         /**
@@ -38,13 +31,7 @@ public class UserContext<T> {
          */
         int RUNNING = 2;
     }
-
-    /**
-     * 是否准备完成
-     */
     public boolean isReady() {
         return gameStatus == GAME_STATUS.READY;
     }
-
-    private @Getter @Setter T player;
 }

@@ -1,17 +1,15 @@
 package com.example.chess.websocket;
 
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
-import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.example.chess.entity.RunContext;
 import com.example.chess.entity.base.Result;
 import com.example.chess.entity.base.Room;
 import com.example.chess.entity.catan.CatanPlayer;
-import com.example.chess.entity.catan.CatanRoom;
-import com.example.chess.entity.play.UserContext;
 import com.example.chess.protocol.ActionTypeEnum;
+import com.example.chess.service.CatanService;
+import com.example.chess.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -19,7 +17,6 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ServerEndpoint("/catan/{token}")
@@ -27,11 +24,20 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class WebsocketCatan {
 
-    private static Integer total = 3;
     private static ConcurrentHashMap<String, Room> roomMap = new ConcurrentHashMap<String, Room>();
 
     // 静态变量，用来记录当前在线链接数。应该把他设计成线程安全的。
     private static int onlineCount = 0;
+    // 计数相关
+    private static synchronized int getOnlineCount() {
+        return onlineCount;
+    }
+    private static synchronized void addOnlineCount() {
+        WebsocketCatan.onlineCount++;
+    }
+    private static synchronized void subOnlineCount() {
+        WebsocketCatan.onlineCount--;
+    }
 
     // 客户端发送数据对象
     private Session session;
@@ -47,6 +53,15 @@ public class WebsocketCatan {
         dThread.start();
     }
 
+    private UserService userService;
+    private CatanService catanService;
+    @Autowired
+    public WebsocketCatan(UserService userService, CatanService catanService) {
+        System.out.println("构造函数 Created!");
+        this.userService = userService;
+        this.catanService = catanService;
+    }
+
     /**
      * 连接成功时调用的方法
      *
@@ -59,7 +74,7 @@ public class WebsocketCatan {
         // 在线数加1
         addOnlineCount();
 
-        CatanPlayer authAccount = getUser(token);
+        CatanPlayer authAccount = userService.getUser(token);
         if (authAccount == null) {
             authAccount = new CatanPlayer();
             authAccount.setId(token);
@@ -73,37 +88,12 @@ public class WebsocketCatan {
         // 断线重连
         if (this.roomId != null) Disconnected(session);
 
-        setUser(this.token, authAccount);
+        // 设置用户信息
+        userService.setUser(this.token, JSONObject.toJSONString(authAccount));
 
         log.debug("有新加入链接！当前在线人数为： --" + getOnlineCount() + "--");
         log.debug("[" + this.session.getId() + "] Client connected");
     }
-
-    private CatanPlayer getUser(String token) {
-        String url = "http://localhost:8181/user/query/" + token;
-        HttpResponse httpResponse = HttpRequest.get(url).execute();
-        if (httpResponse.getStatus() != 200) {
-            log.debug(httpResponse.body());
-            return null;
-        }
-        log.debug(httpResponse.body());
-        JSONObject jsonObject = JSONObject.parseObject(httpResponse.body());
-        String json = jsonObject.getString("data");
-        return JSONObject.parseObject(json, CatanPlayer.class);
-    }
-
-    private Boolean setUser(String token, CatanPlayer player) {
-        String url = "http://localhost:8181/user/update/" + token;
-        HttpResponse httpResponse = HttpRequest.post(url).body(JSONUtil.parseObj(player)).execute();
-        if (httpResponse.getStatus() != 200) {
-            log.debug(httpResponse.body());
-            return null;
-        }
-        log.debug(httpResponse.body());
-        cn.hutool.json.JSONObject jsonObject = JSONUtil.parseObj(httpResponse.body());
-        return jsonObject.get("status") == "0";
-    }
-
 
     /**
      * 连接关闭调用的方法
@@ -115,7 +105,7 @@ public class WebsocketCatan {
         // 在线人数减1
         subOnlineCount();
 
-        leaveRoom(session, "");
+        catanService.leaveRoom(session, "", roomMap);
 
         log.debug("有一连接关闭！当前在线人数为： --" + getOnlineCount() + "--");
         log.debug("[" + this.session.getId() + "] Connection closed");
@@ -129,35 +119,11 @@ public class WebsocketCatan {
      */
     @OnError
     public void onError(Session session, Throwable error) throws IOException, InterruptedException {
-
-        leaveRoom(session, "");
+        catanService.leaveRoom(session, "", roomMap);
 
         log.error("发生错误" + error.getMessage());
         error.printStackTrace();
     }
-
-    // 计数相关
-    private static synchronized int getOnlineCount() {
-        return onlineCount;
-    }
-
-    private static synchronized void addOnlineCount() {
-        WebsocketCatan.onlineCount++;
-    }
-
-    private static synchronized void subOnlineCount() {
-        WebsocketCatan.onlineCount--;
-    }
-
-    private void Disconnected(Session session) throws IOException {
-        Room room = roomMap.get(roomId);
-        // 如果房间状态正在运行中，则自动进入房间
-        if (room != null && room.getGameStatus() == Room.GAME_STATUS.RUNNING) {
-            enterRoom(session, room);
-        }
-    }
-
-    /** --------------------------------------------------------------------------------------------- **/
 
     /**
      * 收到客户端消息后调用的方法
@@ -173,7 +139,7 @@ public class WebsocketCatan {
         ActionTypeEnum resultEnum = ActionTypeEnum.getEnum(result.getStatus());
         switch (resultEnum) {
             case LOGIN: // 登录，缓存持久化
-                doLogin(session, result);
+                userService.doLogin(session, result);
                 break;
 
             case CONNECT_START: // 进入房间，后续的观战
@@ -184,11 +150,11 @@ public class WebsocketCatan {
                 if (doConnect(session, result)) {
                     // TODO: 向Redis存入用户信息：Map<userId, userInfo> = 用户id , roomId + session
                     // 进入房间后，如果房间人数已满，则所有人都准备
-                    doReady(session, message);
+                    catanService.doReady(session, message, roomMap);
                 }
                 break;
             case MATCH_CANCEL: // 取消匹配
-                leaveRoom(session, message);
+                catanService.leaveRoom(session, message, roomMap);
                 break;
 
 
@@ -197,64 +163,12 @@ public class WebsocketCatan {
         }
 
         // 设置用户信息
-        setUser(this.token, getUserFromRoom(session));
+        userService.setUser(this.token, catanService.getUserFromRoom(session, roomMap));
 
         // 控制台打印前端发送过来的消息
         log.debug("控制台打印前端发送过来的消息" + message);
     }
 
-    private CatanPlayer getUserFromRoom(Session session) {
-        Room room = getRoom(session);
-        if (room == null) return null;
-        UserContext<CatanPlayer> userContext = (UserContext<CatanPlayer>) room.getSessions().get(session);
-        if (userContext == null) return null;
-        return userContext.getPlayer();
-    }
-
-
-    /**
-     * 处理ready事件
-     */
-    private void doReady(Session session, String message) throws IOException, InterruptedException {
-        Room room = getRoom(session);
-        if (room == null) return;
-        room.doReady(session);
-    }
-
-    private void doOver(Session session, String message) throws IOException, InterruptedException {
-        Room room = getRoom(session);
-        if (room == null) return;
-        room.doOver(session);
-    }
-
-    private void leaveRoom(Session session, String message) throws IOException, InterruptedException {
-        Room room = getRoom(session);
-        if (room == null) return;
-        room.leaveRoom(session);
-    }
-
-    private String getRoomId(Session session) {
-        return (String) session.getUserProperties().get("roomId");
-    }
-
-    private Room getRoom(Session session) {
-        String roomId = getRoomId(session);
-        if (roomId == null) return null;
-        return roomMap.get(roomId);
-    }
-
-    /**
-     * 登录
-     */
-    private void doLogin(Session session, Result message) {
-        //TODO:   获取用户唯一id、
-        //        从Redis中获取：用户关联 session、用户所在 roomId
-        //        如果未获取到：不做任何操作
-        //        如果获取到：则自动进入房间
-        //        读取用户缓存信息，roomId、合并 session
-        //        读取房间缓存信息。
-
-    }
 
     /**
      * 处理CONNECT请求
@@ -267,18 +181,32 @@ public class WebsocketCatan {
         Room room;
         // 如果没有输入 roomId ，则自动匹配 room
         if (roomId == null || roomId.equals("")) {
-            room = matchRoom();
+            room = catanService.matchRoom(roomMap);
         } else {
             room = roomMap.get(roomId);
             if (room == null) {
-                room = createRoom(roomId);
+                room = catanService.createRoom(roomId, roomMap);
             }
         }
         return enterRoom(session, room);
     }
 
+    /**
+     * 断线重连
+     */
+    private void Disconnected(Session session) throws IOException {
+        Room room = roomMap.get(roomId);
+        // 如果房间状态正在运行中，则自动进入房间
+        if (room != null && room.getGameStatus() == Room.GAME_STATUS.RUNNING) {
+            enterRoom(session, room);
+        }
+    }
+
+    /**
+     * 进入房间
+     */
     private boolean enterRoom(Session session, Room room) throws IOException {
-        CatanPlayer player = getUser(this.token);
+        CatanPlayer player = userService.getUser(this.token);
         assert player != null;
         player.setRoomId(room.getRoomId());
         // 进入房间
@@ -291,31 +219,5 @@ public class WebsocketCatan {
             session.getBasicRemote().sendText(JSONObject.toJSONString(result));
             return false;
         }
-    }
-
-    /**
-     * 匹配房间
-     */
-    private Room matchRoom() {
-        // 匹配没有满人的房间
-        for (Map.Entry<String, Room> entry : roomMap.entrySet()) {
-            if (!entry.getValue().isFull()) {
-                return entry.getValue();
-            }
-        }
-        // 如果全都满了，则再重新创建一个房间
-        return createRoom(null);
-    }
-
-    /**
-     * 创建房间
-     */
-    private Room createRoom(String roomId) {
-        if (roomId == null) {
-            roomId = "RM" + String.format("%04d", roomMap.size() + 1);
-        }
-        Room room = new CatanRoom(roomId, total);
-        roomMap.put(roomId, room);
-        return room;
     }
 }
