@@ -4,19 +4,23 @@ import com.alibaba.fastjson.JSONObject;
 import com.example.chess.entity.RunContext;
 import com.example.chess.entity.base.Result;
 import com.example.chess.entity.base.Room;
+import com.example.chess.entity.catan.CatanPlayer;
 import com.example.chess.entity.catan.CatanRoom;
 import com.example.chess.protocol.ActionTypeEnum;
+import com.example.chess.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
+import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint("/catan")
+@ServerEndpoint("/catan/{token}")
 @Component
 @Slf4j
 public class WebsocketCatan {
@@ -29,6 +33,11 @@ public class WebsocketCatan {
 
     // 客户端发送数据对象
     private Session session;
+    private String token;
+    private String roomId;
+
+    @Autowired
+    private UserService userService;
 
     static {
         System.out.println("Deamon Thread Created!");
@@ -46,10 +55,25 @@ public class WebsocketCatan {
      * @throws IOException
      */
     @OnOpen
-    public void onOpen(Session session) throws IOException {
+    public void onOpen(@PathParam(value = "token") String token, Session session) throws IOException {
         this.session = session;
         // 在线数加1
         addOnlineCount();
+
+        CatanPlayer authAccount = userService.getUser(token);
+        if (authAccount == null) {
+            authAccount = new CatanPlayer();
+            authAccount.setId(token);
+            return;
+        }
+
+        // 获取用户缓存
+        this.token = authAccount.getId();
+        // 获取用户所在房间id
+        this.roomId = authAccount.getRoomId();
+
+        // 断线重连
+        Disconnected(session);
 
         log.debug("有新加入链接！当前在线人数为： --" + getOnlineCount() + "--");
         log.debug("[" + this.session.getId() + "] Client connected");
@@ -99,7 +123,13 @@ public class WebsocketCatan {
         WebsocketCatan.onlineCount--;
     }
 
-
+    private void Disconnected(Session session) throws IOException {
+        Room room = roomMap.get(roomId);
+        // 如果房间状态正在运行中，则自动进入房间
+        if (room != null && room.getGameStatus() == Room.GAME_STATUS.RUNNING) {
+            enterRoom(session, room);
+        }
+    }
     /** --------------------------------------------------------------------------------------------- **/
 
     /**
@@ -186,6 +216,7 @@ public class WebsocketCatan {
         //        如果获取到：则自动进入房间
         //        读取用户缓存信息，roomId、合并 session
         //        读取房间缓存信息。
+
     }
 
     /**
@@ -206,7 +237,10 @@ public class WebsocketCatan {
                 room = createRoom(roomId);
             }
         }
+        return enterRoom(session, room);
+    }
 
+    private boolean enterRoom(Session session, Room room) throws IOException {
         // 进入房间
         if (room.enterRoom(session)) {
             session.getUserProperties().put("roomId", room.getRoomId());

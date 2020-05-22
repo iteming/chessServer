@@ -8,6 +8,15 @@ import java.util.List;
 @Data
 public class CatanPlayer {
     /**
+     * 玩家id
+     */
+    private String id;
+    /**
+     * 房间id
+     */
+    private String roomId;
+
+    /**
      * 本轮是否已经执行过了
      */
     private Boolean isDone;

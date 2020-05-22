@@ -29,12 +29,21 @@ public abstract class Room<T> {
     @Setter
     int totalNumber;
 
-//    /**
-//     * 现有人数
-//     */
-//    protected @Getter
-//    @Setter
-//    int nowNumber;
+    /**
+     * 游戏状态
+     */
+    private @Getter @Setter int gameStatus;
+
+    public interface GAME_STATUS {
+        /**
+         * 已结束
+         */
+        int FINISH = 0;
+        /**
+         * 运行中
+         */
+        int RUNNING = 1;
+    }
 
     /**
      * 创建时间
@@ -90,7 +99,6 @@ public abstract class Room<T> {
     public boolean enterRoom(Session session) {
         if (!isFull()) {
             sessions.put(session, new UserContext<T>(session));
-//            nowNumber++;
 
             // 所有用户都已进入房间后，广播房间已满消息
             if (isFull()) {
@@ -107,7 +115,6 @@ public abstract class Room<T> {
      */
     public void leaveRoom(Session session) {
         sessions.remove(session);
-//        nowNumber--;
     }
 
 
@@ -145,6 +152,7 @@ public abstract class Room<T> {
             UserContext<T> userContext = sessions.get(session);
             userContext.setGameStatus(UserContext.GAME_STATUS.PENDING);
         }
+        this.gameStatus = GAME_STATUS.FINISH;
     }
 
 
@@ -155,6 +163,7 @@ public abstract class Room<T> {
         for (Map.Entry<Session, UserContext<T>> each : sessions.entrySet()) {
             each.getValue().setGameStatus(UserContext.GAME_STATUS.RUNNING);
         }
+        this.gameStatus = GAME_STATUS.RUNNING;
     }
 
     /**
@@ -169,6 +178,7 @@ public abstract class Room<T> {
                 return false;
             }
         }
+
         return true;
     }
 

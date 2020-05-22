@@ -31,6 +31,40 @@ spring:
     username: root
     password: ct584521
     driver-class-name: com.mysql.cj.jdbc.Driver
+  #############################################
+  ## 以下为缓存相关                           ##
+  #############################################
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    jackson:
+      date-format: yyyy-MM-dd HH:mm:ss
+      timeZone: GMT+8
+      serialization.write_dates_as_timestamps: false
+      default-property-inclusion: non_null
+    redis:
+      host: 192.168.8.130
+      port: 36379
+      password: jzy@2019
+      timeout: 60000
+      database: 14
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1s
+          max-idle: 8
+          min-idle: 0
+      jedis:
+        pool:
+          max-active: 8
+          max-wait: -1s
+          max-idle: 8
+          min-idle: 0
+    rabbitmq:
+      host: 192.168.8.130
+      port: 5672
+      username: guest
+      password: guest
 
 
 logging:

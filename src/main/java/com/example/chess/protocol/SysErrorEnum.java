@@ -13,6 +13,16 @@ public enum SysErrorEnum implements ICode {
     SUCCESS(0, "操作成功"),
 
     /**
+     * 权限错误1100 ------1199
+     */
+    AUTH_ERROR(1100,"安全认证错误"),
+
+    /**
+     * 业务错误1200 ------1299
+     */
+    BIZ_EXCEPTION(1200, "业务错误"),
+
+    /**
      * 系统错误1001 ------1099
      */
     SYS_ERROR(1000,"系统错误"),
