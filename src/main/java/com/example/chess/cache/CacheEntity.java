@@ -33,10 +33,10 @@ public class CacheEntity<T> implements Serializable {
     /**
      * 有效时间
      */
-    private Long validTime = 0L;
+    private int validTime = 0;
 
 
-    public CacheEntity(String key, T value, Long validTime) {
+    public CacheEntity(String key, T value, int validTime) {
         this.key = key;
         this.value = value;
         this.validTime = validTime;
@@ -44,7 +44,7 @@ public class CacheEntity<T> implements Serializable {
         this.type = DataType.String;
     }
 
-    public CacheEntity(String key, T value, Long validTime, DataType type) {
+    public CacheEntity(String key, T value, int validTime, DataType type) {
         this.key = key;
         this.value = value;
         this.validTime = validTime;

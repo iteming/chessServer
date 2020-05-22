@@ -32,7 +32,7 @@ public class WebSocketChess {
 
     private static Integer total = 0;
 
-    private static ConcurrentHashMap<String, Room> roomMap = new ConcurrentHashMap<String, Room>();
+    private static ConcurrentHashMap<String, Room<javax.validation.constraints.Null>> roomMap = new ConcurrentHashMap<>();
 
 //    static {
 //        System.out.println(" chess static ");
@@ -54,7 +54,7 @@ public class WebSocketChess {
             String content = message.substring(5);
             FiveAction fiveAction = JSONObject.parseObject(content, FiveAction.class);
             fiveAction.setCode("Chess");
-            Room room = roomMap.get(roomId);
+            Room<javax.validation.constraints.Null> room = roomMap.get(roomId);
             if (room.validAction(fiveAction)) {
                 ChessResult chessResult = new ChessResult();
                 chessResult.setData(fiveAction);
@@ -76,12 +76,12 @@ public class WebSocketChess {
      * @throws InterruptedException
      */
     private void doReady(Session session, String message) throws IOException, InterruptedException {
-        Room room = getRoom(session);
+        Room<javax.validation.constraints.Null> room = getRoom(session);
         room.doReady(session);
     }
 
     private void doOver(Session session, String message) throws IOException, InterruptedException {
-        Room room = getRoom(session);
+        Room<javax.validation.constraints.Null> room = getRoom(session);
         room.doOver(session);
         // 重新初始化棋盘
         room.initChessBoard();
@@ -105,7 +105,7 @@ public class WebSocketChess {
      * @param session
      * @return
      */
-    private Room getRoom(Session session) {
+    private Room<javax.validation.constraints.Null> getRoom(Session session) {
         return roomMap.get(getRoomId(session));
     }
 
@@ -122,8 +122,8 @@ public class WebSocketChess {
         String roomId = roomList.get(0);
         logger.info("A new Client Connect and the roomid is [" + roomId + "]");
         if (roomMap.containsKey(roomId)) {
-            Room room = roomMap.get(roomId);
-            if (room.enterRoom(session)) {
+            Room<javax.validation.constraints.Null> room = roomMap.get(roomId);
+            if (room.enterRoom(session, null)) {
                 session.getUserProperties().put("roomId", roomId);
             } else {
                 System.out.println("---- 进入房间失败 ----");
@@ -133,8 +133,8 @@ public class WebSocketChess {
                 session.getBasicRemote().sendText(JSONObject.toJSONString(chessResult));
             }
         } else {
-            Room room = new FiveRoom(roomId, 2);
-            room.enterRoom(session);
+            Room<javax.validation.constraints.Null> room = new FiveRoom(roomId, 2);
+            room.enterRoom(session, null);
             roomMap.put(roomId, room);
             session.getUserProperties().put("roomId", roomId);
         }
@@ -150,7 +150,7 @@ public class WebSocketChess {
     public void onClose(Session session) {
         String roomId = (String) session.getUserProperties().get("roomId");
         if (roomId != null) {
-            Room room = roomMap.get(roomId);
+            Room<javax.validation.constraints.Null> room = roomMap.get(roomId);
             if (room != null) {
                 room.leaveRoom(session);
                 if (room.getSessions().size() <= 0) {

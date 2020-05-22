@@ -14,8 +14,9 @@ public class UserContext<T> {
 
     private Session session;
 
-    public UserContext(Session session) {
+    public UserContext(Session session, T player) {
         this.session = session;
+        this.player = player;
     }
 
     /**

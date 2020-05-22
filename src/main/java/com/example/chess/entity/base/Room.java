@@ -96,9 +96,9 @@ public abstract class Room<T> {
     /**
      * 进入房间
      */
-    public boolean enterRoom(Session session) {
+    public boolean enterRoom(Session session, T player) {
         if (!isFull()) {
-            sessions.put(session, new UserContext<T>(session));
+            sessions.put(session, new UserContext<T>(session, player));
 
             // 所有用户都已进入房间后，广播房间已满消息
             if (isFull()) {

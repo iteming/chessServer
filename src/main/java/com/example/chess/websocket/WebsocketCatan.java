@@ -1,15 +1,17 @@
 package com.example.chess.websocket;
 
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.example.chess.entity.RunContext;
 import com.example.chess.entity.base.Result;
 import com.example.chess.entity.base.Room;
 import com.example.chess.entity.catan.CatanPlayer;
 import com.example.chess.entity.catan.CatanRoom;
+import com.example.chess.entity.play.UserContext;
 import com.example.chess.protocol.ActionTypeEnum;
-import com.example.chess.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -36,9 +38,6 @@ public class WebsocketCatan {
     private String token;
     private String roomId;
 
-    @Autowired
-    private UserService userService;
-
     static {
         System.out.println("Deamon Thread Created!");
         log.debug("Deamon Thread Created! ----- ");
@@ -60,11 +59,10 @@ public class WebsocketCatan {
         // 在线数加1
         addOnlineCount();
 
-        CatanPlayer authAccount = userService.getUser(token);
+        CatanPlayer authAccount = getUser(token);
         if (authAccount == null) {
             authAccount = new CatanPlayer();
             authAccount.setId(token);
-            return;
         }
 
         // 获取用户缓存
@@ -73,11 +71,39 @@ public class WebsocketCatan {
         this.roomId = authAccount.getRoomId();
 
         // 断线重连
-        Disconnected(session);
+        if (this.roomId != null) Disconnected(session);
+
+        setUser(this.token, authAccount);
 
         log.debug("有新加入链接！当前在线人数为： --" + getOnlineCount() + "--");
         log.debug("[" + this.session.getId() + "] Client connected");
     }
+
+    private CatanPlayer getUser(String token) {
+        String url = "http://localhost:8181/user/query/" + token;
+        HttpResponse httpResponse = HttpRequest.get(url).execute();
+        if (httpResponse.getStatus() != 200) {
+            log.debug(httpResponse.body());
+            return null;
+        }
+        log.debug(httpResponse.body());
+        JSONObject jsonObject = JSONObject.parseObject(httpResponse.body());
+        String json = jsonObject.getString("data");
+        return JSONObject.parseObject(json, CatanPlayer.class);
+    }
+
+    private Boolean setUser(String token, CatanPlayer player) {
+        String url = "http://localhost:8181/user/update/" + token;
+        HttpResponse httpResponse = HttpRequest.post(url).body(JSONUtil.parseObj(player)).execute();
+        if (httpResponse.getStatus() != 200) {
+            log.debug(httpResponse.body());
+            return null;
+        }
+        log.debug(httpResponse.body());
+        cn.hutool.json.JSONObject jsonObject = JSONUtil.parseObj(httpResponse.body());
+        return jsonObject.get("status") == "0";
+    }
+
 
     /**
      * 连接关闭调用的方法
@@ -130,6 +156,7 @@ public class WebsocketCatan {
             enterRoom(session, room);
         }
     }
+
     /** --------------------------------------------------------------------------------------------- **/
 
     /**
@@ -169,9 +196,19 @@ public class WebsocketCatan {
                 break;
         }
 
+        // 设置用户信息
+        setUser(this.token, getUserFromRoom(session));
 
         // 控制台打印前端发送过来的消息
         log.debug("控制台打印前端发送过来的消息" + message);
+    }
+
+    private CatanPlayer getUserFromRoom(Session session) {
+        Room room = getRoom(session);
+        if (room == null) return null;
+        UserContext<CatanPlayer> userContext = (UserContext<CatanPlayer>) room.getSessions().get(session);
+        if (userContext == null) return null;
+        return userContext.getPlayer();
     }
 
 
@@ -241,8 +278,11 @@ public class WebsocketCatan {
     }
 
     private boolean enterRoom(Session session, Room room) throws IOException {
+        CatanPlayer player = getUser(this.token);
+        assert player != null;
+        player.setRoomId(room.getRoomId());
         // 进入房间
-        if (room.enterRoom(session)) {
+        if (room.enterRoom(session, player)) {
             session.getUserProperties().put("roomId", room.getRoomId());
             return true;
         } else {

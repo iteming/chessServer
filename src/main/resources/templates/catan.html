@@ -23,6 +23,7 @@
     var ws;
     var lockReconnect = false; // 避免重复链接
     var wsUrl = 'ws://' + document.location.host + "/catan";
+    wsUrl += "/access_token";
     wsUrl += "?roomId=";
 
     // 创建链接

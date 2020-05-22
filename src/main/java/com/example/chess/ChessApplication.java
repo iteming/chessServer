@@ -7,6 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan("com.example")
+@ComponentScan("com.example.*")
 public class ChessApplication {
 
     private static String port;

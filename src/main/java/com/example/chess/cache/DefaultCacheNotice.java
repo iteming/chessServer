@@ -19,7 +19,7 @@ public class DefaultCacheNotice implements CacheNotice {
     @Override
     public CacheEntity<String> loadStr(String key) {
         log.debug("-----loadStr------{}-----------", key);
-        return new CacheEntity<String>(key,null,0L);
+        return new CacheEntity<String>(key,null,0);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class DefaultCacheNotice implements CacheNotice {
     @Override
     public CacheEntity<ConcurrentHashMap<String, String>> loadHash(String key) {
         log.debug("-----loadHash------{}-----------", key);
-        return new CacheEntity<ConcurrentHashMap<String, String>>(key,null,0L);
+        return new CacheEntity<ConcurrentHashMap<String, String>>(key,null,0);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class DefaultCacheNotice implements CacheNotice {
     @Override
     public CacheEntity<LinkedList<String>> loadList(String key) {
         log.debug("-----loadList------{}-----------", key);
-        return new CacheEntity<LinkedList<String>>(key,null,0L);
+        return new CacheEntity<LinkedList<String>>(key,null,0);
     }
 
     @Override
@@ -52,6 +52,6 @@ public class DefaultCacheNotice implements CacheNotice {
     @Override
     public CacheEntity<LinkedHashSet<String>> loadSet(String key) {
         log.debug("-----loadSet------{}-----------", key);
-        return new CacheEntity<LinkedHashSet<String>>(key,null,0L);
+        return new CacheEntity<LinkedHashSet<String>>(key,null,0);
     }
 }

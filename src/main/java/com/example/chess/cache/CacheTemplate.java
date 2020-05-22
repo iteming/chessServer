@@ -17,7 +17,7 @@ import java.util.Set;
 @Component
 public interface CacheTemplate {
 
-    Long DEFAULT_VALID_TIME = 60 * 60 * 1000L;
+    int DEFAULT_VALID_TIME = 60 * 60 * 1000;
 
     /**
      * 存取缓存

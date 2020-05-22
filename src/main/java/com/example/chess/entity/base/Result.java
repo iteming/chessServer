@@ -25,14 +25,6 @@ public class Result<T> implements Serializable {
      */
     private String message;
     /**
-     * 请求路径
-     */
-    private String path;
-    /**
-     * 时间戳
-     */
-    private String timestamp;
-    /**
      * 返回对象
      */
     private T data;
@@ -69,8 +61,6 @@ public class Result<T> implements Serializable {
 
     /**
      * 操作成功
-     *
-     * @return
      */
     public static Result success() {
         return new Result(SysErrorEnum.SUCCESS);
@@ -78,9 +68,6 @@ public class Result<T> implements Serializable {
 
     /**
      * 操作成功
-     *
-     * @param data
-     * @return
      */
     public static <T> Result<T> success(T data) {
         return new Result<>(SysErrorEnum.SUCCESS, data);
@@ -88,8 +75,6 @@ public class Result<T> implements Serializable {
 
     /**
      * 操作失败
-     *
-     * @return
      */
     public static Result failed() {
         return new Result(SysErrorEnum.FAILED);
@@ -97,9 +82,6 @@ public class Result<T> implements Serializable {
 
     /**
      * 操作失败
-     *
-     * @param data
-     * @return
      */
     public static <T> Result<T> failed(T data) {
         return new Result<>(SysErrorEnum.FAILED, data);
@@ -107,9 +89,6 @@ public class Result<T> implements Serializable {
 
     /**
      * 自定义返回
-     *
-     * @param code
-     * @return
      */
     public static Result custom(ICode code) {
         return custom(code, null);
@@ -117,9 +96,6 @@ public class Result<T> implements Serializable {
 
     /**
      * 自定义返回
-     *
-     * @param message
-     * @return
      */
     public static Result custom(int status, String message) {
         return new Result(status, message);
@@ -127,10 +103,6 @@ public class Result<T> implements Serializable {
 
     /**
      * 自定义返回
-     *
-     * @param message
-     * @param data
-     * @return
      */
     public static <T> Result<T> custom(int status, String message, T data) {
         return new Result<>(status, message, data);
@@ -138,15 +110,9 @@ public class Result<T> implements Serializable {
 
     /**
      * 自定义返回
-     *
-     * @param code
-     * @param data
-     * @return
      */
     public static <T> Result<T> custom(ICode code, T data) {
         return new Result<>(code, data);
     }
-
-
 }
 
