@@ -37,8 +37,7 @@ public class UserService {
         return JSONObject.parseObject(userString, CatanPlayer.class);
     }
 
-    public Result setUser(String token, String user) {
+    public void setUser(String token, String user) {
         cacheTemplate.set(token, user, CacheTemplate.DEFAULT_VALID_TIME);
-        return Result.success();
     }
 }
