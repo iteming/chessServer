@@ -218,7 +218,8 @@ public class CatanRoom extends Room<CatanPlayer> {
     /**
      * 开始一个回合
      */
-    private void startTurn() {
+    @Override
+    public void startTurn() {
         isNextTurn();
 
         ArrayList<Map.Entry<Session, UserContext<CatanPlayer>>> listUser = new ArrayList<>(sessions.entrySet());
@@ -245,10 +246,10 @@ public class CatanRoom extends Room<CatanPlayer> {
 
     /**
      * 接收用户的一个动作
-     *
      */
-    private void startAction(ActionTypeEnum actionTypeEnum) {
-
+    @Override
+    public void startAction(ActionTypeEnum actionTypeEnum) {
+        log.debug("do action enum is {},{} ", actionTypeEnum.getCode(), actionTypeEnum.getMessage());
     }
 
     private String commonResult(ActionTypeEnum actionTypeEnum) {

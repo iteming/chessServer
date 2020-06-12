@@ -157,8 +157,8 @@ public class WebsocketCatan {
                 catanService.leaveRoom(session, message, roomMap);
                 break;
 
-
             default:
+                catanService.startAction(session, message, roomMap);
                 break;
         }
 

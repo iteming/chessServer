@@ -1,13 +1,13 @@
 package com.example.chess.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.chess.cache.CacheTemplate;
+import com.example.chess.entity.base.Result;
 import com.example.chess.entity.base.Room;
 import com.example.chess.entity.catan.CatanPlayer;
 import com.example.chess.entity.catan.CatanRoom;
 import com.example.chess.entity.play.UserContext;
+import com.example.chess.protocol.ActionTypeEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.Session;
@@ -18,9 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Slf4j
 public class CatanService {
-
-    @Autowired
-    private CacheTemplate cacheTemplate;
 
     private static Integer total = 3;
 
@@ -90,5 +87,17 @@ public class CatanService {
         String roomId = getRoomId(session);
         if (roomId == null) return null;
         return roomMap.get(roomId);
+    }
+
+
+    /** ----------------------------------------------------------------------------------- **/
+
+    public String startAction(Session session, String message, ConcurrentHashMap<String, Room> roomMap) {
+        Room room = getRoom(session, roomMap);
+        Result result = JSONObject.parseObject(message, Result.class);
+        ActionTypeEnum actionTypeEnum = ActionTypeEnum.getEnum(result.getStatus());
+        room.startAction(actionTypeEnum);
+
+        return (String) session.getUserProperties().get("roomId");
     }
 }

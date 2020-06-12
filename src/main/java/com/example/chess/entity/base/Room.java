@@ -1,6 +1,7 @@
 package com.example.chess.entity.base;
 
 import com.example.chess.entity.play.UserContext;
+import com.example.chess.protocol.ActionTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -164,6 +165,12 @@ public abstract class Room<T> {
             each.getValue().setGameStatus(UserContext.GAME_STATUS.RUNNING);
         }
         this.gameStatus = GAME_STATUS.RUNNING;
+    }
+    public void startTurn(){
+
+    }
+    public void startAction(ActionTypeEnum actionTypeEnum){
+
     }
 
     /**
