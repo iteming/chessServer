@@ -15,6 +15,7 @@
 <body>
 <a href="#" onclick="doConnect()"> 开始匹配 </a><br/>
 <a href="#" onclick="clearMessageInnerHTML()"> 清空消息 </a><br/>
+<a href="#" onclick="doThrowSieve()"> 投掷筛子 </a><br/>
 监控列表<br/>
 <div id="message">
 
@@ -90,6 +91,18 @@
         var action = {
             status: 3,
             message: "开始匹配"
+        };
+
+        ws.send(JSON.stringify(action))
+    }
+
+    function doThrowSieve() {
+        var message = "投掷筛子";
+        document.getElementById('message').innerHTML += message + '<br/>';
+
+        var action = {
+            status: 11,
+            message: "投掷筛子"
         };
 
         ws.send(JSON.stringify(action))
