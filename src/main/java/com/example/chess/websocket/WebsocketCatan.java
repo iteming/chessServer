@@ -9,7 +9,6 @@ import com.example.chess.protocol.ActionTypeEnum;
 import com.example.chess.service.CatanService;
 import com.example.chess.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -53,14 +52,16 @@ public class WebsocketCatan {
         dThread.start();
     }
 
-    private UserService userService;
-    private CatanService catanService;
-    @Autowired
-    public WebsocketCatan(UserService userService, CatanService catanService) {
-        System.out.println("构造函数 Created!");
-        this.userService = userService;
-        this.catanService = catanService;
-    }
+//    private SpringContextUtil springContextUtil = new SpringContextUtil();
+    private UserService userService = SpringContextUtil.getBean(UserService.class);
+    private CatanService catanService  = SpringContextUtil.getBean(CatanService.class);
+
+//    @Autowired
+//    public WebsocketCatan(UserService userService, CatanService catanService) {
+//        System.out.println("构造函数 Created!");
+//        this.userService = userService;
+//        this.catanService = catanService;
+//    }
 
     /**
      * 连接成功时调用的方法
